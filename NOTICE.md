@@ -4,7 +4,7 @@
 
 - Project: Paqq
 - Fork maintainer: Evan Sarmiento
-- Fork repository: https://github.com/doprdele/Packt
+- Fork repository: https://github.com/doprdele/paqq
 
 ## Upstream Attribution
 
