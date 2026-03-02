@@ -69,7 +69,7 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(port, host, () => {
-  process.stdout.write(`Packt backend (node adapter) listening on ${host}:${port}\n`);
+  process.stdout.write(`Paqq backend (node adapter) listening on ${host}:${port}\n`);
 });
 
 process.on('SIGTERM', () => scheduler.stop());

@@ -6,7 +6,7 @@ import {
 } from "../src/normalize.js";
 
 describe("normalizeUspsTracking", () => {
-  it("maps USPS-style raw events into Packt shipment shape", () => {
+  it("maps USPS-style raw events into Paqq shipment shape", () => {
     const raw: RawUspsTracking = {
       trackingNumber: "9400150208203004850386",
       trackingUrl:

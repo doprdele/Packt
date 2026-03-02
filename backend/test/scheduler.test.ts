@@ -70,6 +70,24 @@ afterEach(async () => {
 });
 
 describe("TrackingScheduler", () => {
+  it("uses PAQQ scheduler env keys and keeps PACKT keys as fallback", () => {
+    const scheduler = new TrackingScheduler({
+      PAQQ_TRACKING_SCHEDULER_ENABLED: "true",
+      PAQQ_TRACKING_SCHEDULER_INTERVAL_MS: "5000",
+      PAQQ_TRACKING_SCHEDULER_STATE_FILE: "/tmp/paqq-state.json",
+      PAQQ_TRACKING_SCHEDULER_RUN_ON_START: "false",
+      PACKT_TRACKING_SCHEDULER_ENABLED: "false",
+      PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "9999",
+      PACKT_TRACKING_SCHEDULER_STATE_FILE: "/tmp/legacy-state.json",
+      PACKT_TRACKING_SCHEDULER_RUN_ON_START: "true",
+    });
+
+    const status = scheduler.getStatus();
+    expect(status.enabled).toBe(true);
+    expect(status.intervalMs).toBe(5000);
+    expect(status.stateFile).toBe("/tmp/paqq-state.json");
+  });
+
   it("stops automatic polling after a target is delivered", async () => {
     const server = await createMockScraperServer((_req, res) => {
       res.setHeader("content-type", "application/json");
@@ -98,7 +116,7 @@ describe("TrackingScheduler", () => {
     });
     cleanupTasks.push(server.close);
 
-    const stateDir = await mkdtemp(join(tmpdir(), "packt-scheduler-test-"));
+    const stateDir = await mkdtemp(join(tmpdir(), "paqq-scheduler-test-"));
     cleanupTasks.push(async () => {
       await rm(stateDir, { recursive: true, force: true });
     });
@@ -124,7 +142,7 @@ describe("TrackingScheduler", () => {
   });
 
   it("persists friendlyName metadata and supports removing targets", async () => {
-    const stateDir = await mkdtemp(join(tmpdir(), "packt-scheduler-test-"));
+    const stateDir = await mkdtemp(join(tmpdir(), "paqq-scheduler-test-"));
     cleanupTasks.push(async () => {
       await rm(stateDir, { recursive: true, force: true });
     });
@@ -190,7 +208,7 @@ describe("TrackingScheduler", () => {
     });
     cleanupTasks.push(server.close);
 
-    const stateDir = await mkdtemp(join(tmpdir(), "packt-scheduler-test-"));
+    const stateDir = await mkdtemp(join(tmpdir(), "paqq-scheduler-test-"));
     const stateFile = join(stateDir, "scheduler-uniuni.json");
     cleanupTasks.push(async () => {
       await rm(stateDir, { recursive: true, force: true });
@@ -249,7 +267,7 @@ describe("TrackingScheduler", () => {
     });
     cleanupTasks.push(server.close);
 
-    const stateDir = await mkdtemp(join(tmpdir(), "packt-scheduler-test-"));
+    const stateDir = await mkdtemp(join(tmpdir(), "paqq-scheduler-test-"));
     cleanupTasks.push(async () => {
       await rm(stateDir, { recursive: true, force: true });
     });
@@ -305,7 +323,7 @@ describe("TrackingScheduler", () => {
     });
     cleanupTasks.push(server.close);
 
-    const stateDir = await mkdtemp(join(tmpdir(), "packt-scheduler-test-"));
+    const stateDir = await mkdtemp(join(tmpdir(), "paqq-scheduler-test-"));
     const stateFile = join(stateDir, "scheduler.json");
     cleanupTasks.push(async () => {
       await rm(stateDir, { recursive: true, force: true });

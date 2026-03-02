@@ -80,7 +80,7 @@ describe("UniUni source integration", () => {
   it("includes UniUni in /api/list", async () => {
     sourcesRegistry.initialize({ UNIUNI_SCRAPER_URL: "http://127.0.0.1:8790" });
 
-    const response = await handleList(new Request("https://packt.test/api/list"));
+    const response = await handleList(new Request("https://paqq.test/api/list"));
     const sources = (await response.json()) as Array<{
       name: string;
       requiredFields: string[];
@@ -142,7 +142,7 @@ describe("UniUni source integration", () => {
 
     const response = await handleGet(
       new Request(
-        "https://packt.test/api/get?source=uniuni&trackingNumber=UUS62M6610133301160"
+        "https://paqq.test/api/get?source=uniuni&trackingNumber=UUS62M6610133301160"
       ),
       env
     );
@@ -210,7 +210,7 @@ describe("UniUni source integration", () => {
 
     const response = await handleGet(
       new Request(
-        "https://packt.test/api/get?source=uniuni&trackingNumber=UUS62M6610133301160"
+        "https://paqq.test/api/get?source=uniuni&trackingNumber=UUS62M6610133301160"
       ),
       env
     );
@@ -236,7 +236,7 @@ describe("UniUni source integration", () => {
 
     const response = await handleGet(
       new Request(
-        "https://packt.test/api/get?source=uniuni&trackingNumber=UUS62M6610133301160"
+        "https://paqq.test/api/get?source=uniuni&trackingNumber=UUS62M6610133301160"
       ),
       env
     );

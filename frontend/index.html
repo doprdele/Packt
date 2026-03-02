@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Packt</title>
+    <title>Paqq</title>
     <meta name="theme-color" content="#A67B5B" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -11,21 +11,21 @@
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-    <meta name="apple-mobile-web-app-title" content="Packt" />
+    <meta name="apple-mobile-web-app-title" content="Paqq" />
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Packt" />
-    <meta property="og:url" content="https://packt.pages.dev" />
+    <meta property="og:title" content="Paqq" />
+    <meta property="og:url" content="https://paqq.pages.dev" />
     <meta
       property="og:image"
-      content="https://packt.pages.dev/icons/favicon.png"
+      content="https://paqq.pages.dev/icons/favicon.png"
     />
     <meta
       property="og:description"
       content="A modern package tracking platform that lets you monitor all your shipments in one place"
     />
-    <meta name="title" content="Packt" />
+    <meta name="title" content="Paqq" />
     <meta
       name="description"
       content="A modern package tracking platform that lets you monitor all your shipments in one place"
@@ -53,7 +53,7 @@
     <script src="runtime-config.js"></script>
     <link rel="icon" href="icons/favicon.png" />
     <style>
-      @keyframes packtDotBounce {
+      @keyframes paqqDotBounce {
         0%,
         80%,
         100% {
@@ -66,7 +66,7 @@
         }
       }
 
-      .packt-loading-chip {
+      .paqq-loading-chip {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
@@ -78,29 +78,29 @@
         background: rgba(166, 123, 91, 0.14);
       }
 
-      .dark .packt-loading-chip {
+      .dark .paqq-loading-chip {
         color: #d8c2b0;
         background: rgba(216, 194, 176, 0.12);
       }
 
-      .packt-loading-dots {
+      .paqq-loading-dots {
         display: inline-flex;
         gap: 0.2rem;
       }
 
-      .packt-loading-dots span {
+      .paqq-loading-dots span {
         width: 0.3rem;
         height: 0.3rem;
         border-radius: 9999px;
         background: currentColor;
-        animation: packtDotBounce 0.9s infinite ease-in-out;
+        animation: paqqDotBounce 0.9s infinite ease-in-out;
       }
 
-      .packt-loading-dots span:nth-child(2) {
+      .paqq-loading-dots span:nth-child(2) {
         animation-delay: 0.1s;
       }
 
-      .packt-loading-dots span:nth-child(3) {
+      .paqq-loading-dots span:nth-child(3) {
         animation-delay: 0.2s;
       }
     </style>
@@ -110,7 +110,7 @@
     class="bg-gradient-to-br from-coffee-light to-coffee dark:from-gray-900 dark:to-gray-800 min-h-screen p-4 font-montserrat"
   >
     <div class="flex justify-center items-center mb-8 mt-4">
-      <img src="logo.svg" alt="Packt Logo" class="w-96 mr-2 drop-shadow-xl" />
+      <img src="logo.svg" alt="Paqq Logo" class="w-96 mr-2 drop-shadow-xl" />
     </div>
     <div
       class="max-w-5xl mx-auto bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-4 sm:p-6"
@@ -145,18 +145,18 @@
         >
           <div class="text-sm text-coffee-dark dark:text-coffee-light">
             <p class="text-coffee-dark dark:text-coffee-light">
-              © 2025 Packt by Paylicier
+              © 2026 Paqq by Evan Sarmiento
             </p>
             <p class="mt-1 text-coffee-dark dark:text-coffee-light">
-              All carrier logos and trademarks belong to their respective
-              owners.
+              Based on Packt by Paylicier. Original project credit preserved
+              per MPL-2.0.
             </p>
           </div>
           <div
             class="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-4"
           >
             <a
-              href="https://github.com/Paylicier/packt"
+              href="https://github.com/doprdele/Packt"
               target="_blank"
               rel="noopener noreferrer"
               class="text-coffee-dark dark:text-coffee-light hover:opacity-80 transition-opacity whitespace-nowrap"
@@ -189,12 +189,22 @@
             class="flex flex-wrap justify-center gap-4 text-sm text-coffee-dark dark:text-coffee-light"
           >
             <a
-              href="https://github.com/Paylicier/Packt/blob/main/LICENSE"
+              href="https://github.com/doprdele/Packt/blob/main/LICENSE"
               class="hover:underline"
               >License</a
             >
             <span>•</span>
-            <a href="mailto:payl@duck.com" class="hover:underline">Contact</a>
+            <a
+              href="https://github.com/doprdele/Packt/blob/main/NOTICE.md"
+              class="hover:underline"
+              >Notices</a
+            >
+            <span>•</span>
+            <a
+              href="https://github.com/doprdele/Packt/issues"
+              class="hover:underline"
+              >Issues</a
+            >
           </div>
         </div>
       </div>
@@ -335,11 +345,14 @@
     </div>
     <script>
       const API_BASE_URL =
+        window.__PAQQ_CONFIG__?.API_BASE_URL ||
         window.__PACKT_CONFIG__?.API_BASE_URL ||
         "https://packt.notri1.workers.dev";
 
-      const STORAGE_KEY = "packt_packages";
-      const ANALYTICS_PREF_KEY = "packt_analytics_enabled";
+      const STORAGE_KEY = "paqq_packages";
+      const LEGACY_STORAGE_KEY = "packt_packages";
+      const ANALYTICS_PREF_KEY = "paqq_analytics_enabled";
+      const LEGACY_ANALYTICS_PREF_KEY = "packt_analytics_enabled";
 
       function sanitizeHTML(text) {
         if (!text) return "";
@@ -369,6 +382,13 @@
 
       function isAnalyticsEnabled() {
         const pref = localStorage.getItem(ANALYTICS_PREF_KEY);
+        if (pref === null) {
+          const legacyPref = localStorage.getItem(LEGACY_ANALYTICS_PREF_KEY);
+          if (legacyPref !== null) {
+            localStorage.setItem(ANALYTICS_PREF_KEY, legacyPref);
+            return legacyPref === "true";
+          }
+        }
         return pref === null ? true : pref === "true";
       }
 
@@ -431,7 +451,9 @@
       }
 
       function loadPackagesFromLocalStorage() {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const stored =
+          localStorage.getItem(STORAGE_KEY) ||
+          localStorage.getItem(LEGACY_STORAGE_KEY);
         if (stored) {
           packages = JSON.parse(stored);
         }
@@ -737,8 +759,8 @@
 
         const pendingStatusHtml = isTrackingPending
           ? `
-              <div class="packt-loading-chip">
-                  <span class="packt-loading-dots" aria-hidden="true">
+              <div class="paqq-loading-chip">
+                  <span class="paqq-loading-dots" aria-hidden="true">
                       <span></span><span></span><span></span>
                   </span>
                   <span>Fetching details...</span>

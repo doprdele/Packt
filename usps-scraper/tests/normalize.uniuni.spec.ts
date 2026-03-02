@@ -6,7 +6,7 @@ import {
 } from "../src/normalize-uniuni.js";
 
 describe("normalizeUniuniTracking", () => {
-  it("maps UniUni tracking payload into Packt shipment shape", () => {
+  it("maps UniUni tracking payload into Paqq shipment shape", () => {
     const raw: UniuniTrackingApiResponse = {
       status: "SUCCESS",
       ret_msg: "",

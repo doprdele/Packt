@@ -1,7 +1,7 @@
 {
-  "name": "packt",
+  "name": "paqq-backend",
   "version": "0.0.1",
-  "description": "Packt backend using cf workers.",
+  "description": "Paqq backend using cf workers.",
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc",

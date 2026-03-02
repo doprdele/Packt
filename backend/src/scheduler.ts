@@ -67,6 +67,22 @@ function parseBoolean(value: string | undefined, fallback: boolean): boolean {
   return fallback;
 }
 
+function readEnvWithLegacyPrefix(
+  env: RuntimeEnv,
+  key: string
+): string | undefined {
+  if (typeof env[key] === "string") {
+    return env[key];
+  }
+
+  const legacyKey = key.replace(/^PAQQ_/, "PACKT_");
+  if (legacyKey !== key && typeof env[legacyKey] === "string") {
+    return env[legacyKey];
+  }
+
+  return undefined;
+}
+
 function parsePositiveInteger(
   value: string | undefined,
   fallback: number
@@ -135,16 +151,19 @@ export class TrackingScheduler {
   private nextRunAt?: string;
 
   constructor(private readonly env: RuntimeEnv) {
-    this.enabled = parseBoolean(env.PACKT_TRACKING_SCHEDULER_ENABLED, true);
+    this.enabled = parseBoolean(
+      readEnvWithLegacyPrefix(env, "PAQQ_TRACKING_SCHEDULER_ENABLED"),
+      true
+    );
     this.intervalMs = parsePositiveInteger(
-      env.PACKT_TRACKING_SCHEDULER_INTERVAL_MS,
+      readEnvWithLegacyPrefix(env, "PAQQ_TRACKING_SCHEDULER_INTERVAL_MS"),
       4 * 60 * 60 * 1000
     );
     this.stateFile =
-      env.PACKT_TRACKING_SCHEDULER_STATE_FILE ??
+      readEnvWithLegacyPrefix(env, "PAQQ_TRACKING_SCHEDULER_STATE_FILE") ??
       "/app/data/tracking-scheduler-state.json";
     this.runOnStart = parseBoolean(
-      env.PACKT_TRACKING_SCHEDULER_RUN_ON_START,
+      readEnvWithLegacyPrefix(env, "PAQQ_TRACKING_SCHEDULER_RUN_ON_START"),
       true
     );
   }

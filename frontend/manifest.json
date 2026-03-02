@@ -1,7 +1,7 @@
 {
-    "name": "Packt",
-    "short_name": "Packt",
-    "description": "A modern package tracking platform that lets you monitor all your shipments in one place",
+    "name": "Paqq",
+    "short_name": "Paqq",
+    "description": "A playful package tracker fork by Evan Sarmiento, based on Packt",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#D4BBA7",

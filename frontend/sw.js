@@ -1,4 +1,4 @@
-const CACHE_NAME = 'packt-v2';
+const CACHE_NAME = 'paqq-v1';
 const urlsToCache = [
   '/',
   'index.html',

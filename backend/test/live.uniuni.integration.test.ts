@@ -11,7 +11,7 @@ const liveScraperUrl = process.env.UNIUNI_SCRAPER_URL ?? "http://127.0.0.1:8790"
   "live UniUni backend integration",
   () => {
     it(
-      "retrieves real UniUni tracking through Packt backend source",
+      "retrieves real UniUni tracking through Paqq backend source",
       async () => {
         const env = {
           UNIUNI_SCRAPER_URL: liveScraperUrl,
@@ -22,7 +22,7 @@ const liveScraperUrl = process.env.UNIUNI_SCRAPER_URL ?? "http://127.0.0.1:8790"
 
         const response = await handleGet(
           new Request(
-            `https://packt.test/api/get?source=uniuni&trackingNumber=${encodeURIComponent(
+            `https://paqq.test/api/get?source=uniuni&trackingNumber=${encodeURIComponent(
               liveTrackingNumber
             )}`
           ),

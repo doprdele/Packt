@@ -1,11 +1,13 @@
 <div align="center">
 <br>
-  <img src="https://raw.githubusercontent.com/Paylicier/Packt/refs/heads/main/frontend/logo.svg" alt="Packt Logo" width="400"/>
+  <img src="./frontend/logo.svg" alt="Paqq Logo" width="400"/>
   
-  # Packt 
+  # Paqq 
   
-  A modern package tracking platform that lets you monitor all your shipments in one place
+  A playful package tracking platform for monitoring all your shipments in one place
 </div>
+
+> Paqq is a fork of Packt by Paylicier.
 
 ## Features 
 
@@ -47,7 +49,7 @@
 
 ### Runtime Modes
 
-Packt backend now supports two runtime adapters:
+Paqq backend now supports two runtime adapters:
 - Cloudflare Worker adapter (`backend/src/index.ts`)
 - Node adapter (`backend/src/node.ts`)
 
@@ -103,17 +105,19 @@ UniUni scraper environment variables:
 Live tracking test commands:
 - `cd usps-scraper && npm run test:live` (USPS live tracking)
 - `cd usps-scraper && npm run test:live:uniuni` (UniUni live tracking)
-- `cd backend && npm run test:live:uniuni` (Packt backend live test via scraper service)
+- `cd backend && npm run test:live:uniuni` (Paqq backend live test via scraper service)
 
 Backend scheduler environment variables (self-hosted Node runtime):
-- `PACKT_TRACKING_SCHEDULER_ENABLED` (default `true`)
-- `PACKT_TRACKING_SCHEDULER_INTERVAL_MS` (default `14400000`, i.e. 4 hours)
-- `PACKT_TRACKING_SCHEDULER_RUN_ON_START` (default `true`)
-- `PACKT_TRACKING_SCHEDULER_STATE_FILE` (default `/app/data/tracking-scheduler-state.json`)
+- `PAQQ_TRACKING_SCHEDULER_ENABLED` (default `true`)
+- `PAQQ_TRACKING_SCHEDULER_INTERVAL_MS` (default `14400000`, i.e. 4 hours)
+- `PAQQ_TRACKING_SCHEDULER_RUN_ON_START` (default `true`)
+- `PAQQ_TRACKING_SCHEDULER_STATE_FILE` (default `/app/data/tracking-scheduler-state.json`)
 
 The backend scheduler is serialized: only one scheduler run executes at a time.
-Watched packages and latest tracking snapshots are persisted in `PACKT_TRACKING_SCHEDULER_STATE_FILE`.
+Watched packages and latest tracking snapshots are persisted in `PAQQ_TRACKING_SCHEDULER_STATE_FILE`.
 Scheduler polling now continues until a package is delivered, then pauses automatic rechecks for that package.
+
+Legacy `PACKT_*` scheduler variables are still supported for backward compatibility.
 
 ### Frontend
 By default the frontend uses `https://packt.notri1.workers.dev`.
@@ -139,7 +143,7 @@ Endpoints:
 - Scraper service: `http://localhost:8790`
 
 Optional environment overrides:
-- `PACKT_API_BASE_URL` (frontend runtime config; default empty in compose, so nginx proxies `/api` to backend)
+- `PAQQ_API_BASE_URL` (frontend runtime config; default empty in compose, so nginx proxies `/api` to backend)
 - `USPS_SCRAPER_TOKEN`
 - `USPS_SCRAPER_TIMEOUT_MS`
 - `USPS_SCRAPE_MAX_ATTEMPTS`
@@ -147,10 +151,10 @@ Optional environment overrides:
 - `UNIUNI_SCRAPER_TIMEOUT_MS`
 - `UNIUNI_SCRAPE_MAX_ATTEMPTS`
 - `UNIUNI_TRACKING_KEY`
-- `PACKT_TRACKING_SCHEDULER_ENABLED`
-- `PACKT_TRACKING_SCHEDULER_INTERVAL_MS`
-- `PACKT_TRACKING_SCHEDULER_RUN_ON_START`
-- `PACKT_TRACKING_SCHEDULER_STATE_FILE`
+- `PAQQ_TRACKING_SCHEDULER_ENABLED`
+- `PAQQ_TRACKING_SCHEDULER_INTERVAL_MS`
+- `PAQQ_TRACKING_SCHEDULER_RUN_ON_START`
+- `PAQQ_TRACKING_SCHEDULER_STATE_FILE`
 
 ## API Documentation 
 
@@ -202,14 +206,19 @@ Response:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## License 
+## License
 
-This project is available under **Mozilla Public License 2.0 (MPL-2.0)**
+This fork includes code from Packt by Paylicier, and all original MPL notices are preserved.
 
-Please read the license carefully before using this software. If you have any questions about licensing, please open an issue.
+- Upstream/inherited code: **MPL-2.0** (`LICENSE`)
+- Additional distribution in this fork: **AGPL-3.0-or-later** (`LICENSE-AGPL-3.0.txt`) where MPL secondary-license terms allow it
+- Attribution and provenance: `NOTICE.md`
+- Branding restrictions for this fork name/logo: `TRADEMARKS.md`
+
+You must keep attribution notices intact when redistributing this project.
 
 ---
 
 <div align="center">
-  Built with ❤️ and 🌊 by Paylicier
+  Paqq by Evan Sarmiento • original Packt by Paylicier
 </div>

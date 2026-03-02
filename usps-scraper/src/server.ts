@@ -120,5 +120,5 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(port, () => {
-  process.stdout.write(`Packt scraper service listening on port ${port}\n`);
+  process.stdout.write(`Paqq scraper service listening on port ${port}\n`);
 });

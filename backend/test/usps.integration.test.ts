@@ -72,7 +72,7 @@ describe("USPS source integration", () => {
   it("includes USPS in /api/list", async () => {
     sourcesRegistry.initialize({ USPS_SCRAPER_URL: "http://127.0.0.1:8790" });
 
-    const response = await handleList(new Request("https://packt.test/api/list"));
+    const response = await handleList(new Request("https://paqq.test/api/list"));
     const sources = (await response.json()) as Array<{
       name: string;
       requiredFields: string[];
@@ -134,7 +134,7 @@ describe("USPS source integration", () => {
 
     const response = await handleGet(
       new Request(
-        "https://packt.test/api/get?source=usps&trackingNumber=9400150208203004850386"
+        "https://paqq.test/api/get?source=usps&trackingNumber=9400150208203004850386"
       ),
       env
     );
@@ -203,7 +203,7 @@ describe("USPS source integration", () => {
 
     const response = await handleGet(
       new Request(
-        "https://packt.test/api/get?source=usps&trackingNumber=9400150208203004850386"
+        "https://paqq.test/api/get?source=usps&trackingNumber=9400150208203004850386"
       ),
       env
     );
@@ -229,7 +229,7 @@ describe("USPS source integration", () => {
 
     const response = await handleGet(
       new Request(
-        "https://packt.test/api/get?source=usps&trackingNumber=9400150208203004850386"
+        "https://paqq.test/api/get?source=usps&trackingNumber=9400150208203004850386"
       ),
       env
     );

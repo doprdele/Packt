@@ -7,7 +7,7 @@ describe('runtime-neutral app handler', () => {
       USPS_SCRAPER_URL: 'http://127.0.0.1:8790',
       UNIUNI_SCRAPER_URL: 'http://127.0.0.1:8790',
     };
-    const response = await handleRequest(new Request('https://packt.test/api/list'), env);
+    const response = await handleRequest(new Request('https://paqq.test/api/list'), env);
 
     expect(response.status).toBe(200);
     const payload = (await response.json()) as Array<{ name: string }>;
@@ -16,18 +16,18 @@ describe('runtime-neutral app handler', () => {
   });
 
   it('returns 404 for unknown paths', async () => {
-    const response = await handleRequest(new Request('https://packt.test/unknown'), {});
+    const response = await handleRequest(new Request('https://paqq.test/unknown'), {});
     expect(response.status).toBe(404);
   });
 
   it('returns 404 for scheduler endpoint in worker runtime', async () => {
-    const response = await handleRequest(new Request('https://packt.test/api/scheduler/status'), {});
+    const response = await handleRequest(new Request('https://paqq.test/api/scheduler/status'), {});
     expect(response.status).toBe(404);
   });
 
   it('returns 404 for scheduler targets endpoint in worker runtime', async () => {
     const response = await handleRequest(
-      new Request('https://packt.test/api/scheduler/targets'),
+      new Request('https://paqq.test/api/scheduler/targets'),
       {}
     );
     expect(response.status).toBe(404);

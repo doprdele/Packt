@@ -8,12 +8,12 @@ import {
 import type { ScrapeOptions, ShipmentInfo } from "./types.js";
 
 const chromiumWithFlags = chromium as typeof chromium & {
-  __packtStealthApplied?: boolean;
+  __paqqStealthApplied?: boolean;
 };
 
-if (!chromiumWithFlags.__packtStealthApplied) {
+if (!chromiumWithFlags.__paqqStealthApplied) {
   chromium.use(StealthPlugin());
-  chromiumWithFlags.__packtStealthApplied = true;
+  chromiumWithFlags.__paqqStealthApplied = true;
 }
 
 const UNIUNI_TRACKING_PAGE_URL = "https://www.uniuni.com/tracking/";
