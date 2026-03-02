@@ -5,7 +5,7 @@ services:
     environment:
       PORT: "8790"
       USPS_HEADFUL: "0"
-      USPS_SCRAPE_MAX_ATTEMPTS: "2"
+      USPS_SCRAPE_MAX_ATTEMPTS: "${USPS_SCRAPE_MAX_ATTEMPTS:-10}"
     ports:
       - "8790:8790"
     healthcheck:
@@ -23,7 +23,7 @@ services:
       HOST: "0.0.0.0"
       USPS_SCRAPER_URL: "http://usps-scraper:8790"
       USPS_SCRAPER_TOKEN: "${USPS_SCRAPER_TOKEN:-}"
-      USPS_SCRAPER_TIMEOUT_MS: "${USPS_SCRAPER_TIMEOUT_MS:-60000}"
+      USPS_SCRAPER_TIMEOUT_MS: "${USPS_SCRAPER_TIMEOUT_MS:-300000}"
     depends_on:
       usps-scraper:
         condition: service_healthy
@@ -41,6 +41,8 @@ services:
       context: ./frontend
     environment:
       PACKT_API_BASE_URL: "${PACKT_API_BASE_URL:-}"
+      PACKT_AUTO_RECHECK_ENABLED: "${PACKT_AUTO_RECHECK_ENABLED:-true}"
+      PACKT_AUTO_RECHECK_INTERVAL_MS: "${PACKT_AUTO_RECHECK_INTERVAL_MS:-14400000}"
     depends_on:
       backend:
         condition: service_healthy

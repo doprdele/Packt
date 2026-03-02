@@ -83,13 +83,21 @@ npm run start
 Backend environment variables for USPS:
 - `USPS_SCRAPER_URL` (default `http://127.0.0.1:8790`)
 - `USPS_SCRAPER_TOKEN` (optional shared secret, sent as `x-usps-scraper-token`)
-- `USPS_SCRAPER_TIMEOUT_MS` (optional request timeout, default `60000`)
+- `USPS_SCRAPER_TIMEOUT_MS` (optional request timeout, default `300000`)
+
+USPS scraper environment variables:
+- `USPS_SCRAPE_MAX_ATTEMPTS` (optional retries, default `10`)
 - `USPS_CDP_WS_ENDPOINT` (optional CDP endpoint used by scraper via `connectOverCDP`)
 
 ### Frontend
 By default the frontend uses `https://packt.notri1.workers.dev`.
 
-For self-hosting, set `window.__PACKT_CONFIG__.API_BASE_URL` in `frontend/runtime-config.js`.
+For self-hosting, configure `frontend/runtime-config.js`:
+- `API_BASE_URL`
+- `AUTO_RECHECK_ENABLED` (default `true`)
+- `AUTO_RECHECK_INTERVAL_MS` (default `14400000`, i.e. 4 hours)
+
+Package rechecks are serialized client-side, so only one recheck run executes at a time.
 
 ### Docker Compose (Self-Hosted)
 
@@ -110,8 +118,11 @@ Endpoints:
 
 Optional environment overrides:
 - `PACKT_API_BASE_URL` (frontend runtime config; default empty in compose, so nginx proxies `/api` to backend)
+- `PACKT_AUTO_RECHECK_ENABLED` (frontend auto recheck scheduler toggle; default `true`)
+- `PACKT_AUTO_RECHECK_INTERVAL_MS` (frontend auto recheck interval; default `14400000`)
 - `USPS_SCRAPER_TOKEN`
 - `USPS_SCRAPER_TIMEOUT_MS`
+- `USPS_SCRAPE_MAX_ATTEMPTS`
 
 ## API Documentation 
 

@@ -158,6 +158,59 @@ describe("USPS source integration", () => {
     );
   });
 
+  it("uses default USPS scraper timeout when not configured", async () => {
+    const server = await createMockScraperServer((req, res, body) => {
+      if (req.url !== "/track" || req.method !== "POST") {
+        res.statusCode = 404;
+        res.end("not found");
+        return;
+      }
+
+      const parsed = JSON.parse(body);
+      expect(parsed.timeoutMs).toBe(300000);
+
+      res.setHeader("content-type", "application/json");
+      res.end(
+        JSON.stringify({
+          trackingNumber: "9400150208203004850386",
+          trackingUrl:
+            "https://tools.usps.com/go/TrackConfirmAction.action?tLabels=9400150208203004850386",
+          carrier: "usps",
+          status: {
+            code: "3",
+            description: "In Transit",
+            timestamp: "2026-02-28T22:19:00.000Z",
+            location: "TEST CITY, ST 00000",
+          },
+          events: [
+            {
+              code: "3",
+              description: "In Transit",
+              timestamp: "2026-02-28T22:19:00.000Z",
+              location: "TEST CITY, ST 00000",
+            },
+          ],
+        })
+      );
+    });
+
+    serversToClose.push(server.close);
+
+    const env = {
+      USPS_SCRAPER_URL: server.baseUrl,
+    };
+    sourcesRegistry.initialize(env);
+
+    const response = await handleGet(
+      new Request(
+        "https://packt.test/api/get?source=usps&trackingNumber=9400150208203004850386"
+      ),
+      env
+    );
+
+    expect(response.status).toBe(200);
+  });
+
   it("returns backend error when USPS scraper fails", async () => {
     const server = await createMockScraperServer((_req, res) => {
       res.statusCode = 500;

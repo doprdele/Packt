@@ -24,7 +24,11 @@ export class USPSSource extends TrackingSource {
       | string
       | undefined;
 
-    const timeoutMs = Number(env.USPS_SCRAPER_TIMEOUT_MS ?? "60000");
+    const parsedTimeoutMs = Number(env.USPS_SCRAPER_TIMEOUT_MS ?? "300000");
+    const timeoutMs =
+      Number.isFinite(parsedTimeoutMs) && parsedTimeoutMs > 0
+        ? parsedTimeoutMs
+        : 300000;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 

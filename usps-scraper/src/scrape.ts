@@ -249,7 +249,11 @@ export async function scrapeUspsTracking(
   const normalizedTrackingNumber = ensureTrackingNumber(trackingNumber);
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 
-  const maxAttempts = Number(process.env.USPS_SCRAPE_MAX_ATTEMPTS ?? "2");
+  const parsedMaxAttempts = Number(process.env.USPS_SCRAPE_MAX_ATTEMPTS ?? "10");
+  const maxAttempts =
+    Number.isInteger(parsedMaxAttempts) && parsedMaxAttempts > 0
+      ? parsedMaxAttempts
+      : 10;
   let lastError: Error | undefined;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {

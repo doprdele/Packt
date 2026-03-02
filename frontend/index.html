@@ -282,9 +282,43 @@
       </div>
     </div>
     <script>
+      const DEFAULT_AUTO_RECHECK_INTERVAL_MS = 4 * 60 * 60 * 1000;
+
+      function parseBooleanConfig(value, fallback) {
+        if (typeof value === "boolean") {
+          return value;
+        }
+        if (typeof value === "string") {
+          const normalized = value.trim().toLowerCase();
+          if (["1", "true", "yes", "on"].includes(normalized)) {
+            return true;
+          }
+          if (["0", "false", "no", "off"].includes(normalized)) {
+            return false;
+          }
+        }
+        return fallback;
+      }
+
+      function parsePositiveIntegerConfig(value, fallback) {
+        const parsed = Number(value);
+        if (Number.isInteger(parsed) && parsed > 0) {
+          return parsed;
+        }
+        return fallback;
+      }
+
       const API_BASE_URL =
         window.__PACKT_CONFIG__?.API_BASE_URL ||
         "https://packt.notri1.workers.dev";
+      const AUTO_RECHECK_ENABLED = parseBooleanConfig(
+        window.__PACKT_CONFIG__?.AUTO_RECHECK_ENABLED,
+        true
+      );
+      const AUTO_RECHECK_INTERVAL_MS = parsePositiveIntegerConfig(
+        window.__PACKT_CONFIG__?.AUTO_RECHECK_INTERVAL_MS,
+        DEFAULT_AUTO_RECHECK_INTERVAL_MS
+      );
 
       const STORAGE_KEY = "packt_packages";
       const ANALYTICS_PREF_KEY = "packt_analytics_enabled";
@@ -386,6 +420,8 @@
       }
 
       let packages = [];
+      let recheckInProgress = false;
+      let autoRecheckIntervalId = null;
 
       loadPackagesFromLocalStorage();
 
@@ -1087,8 +1123,9 @@
         updateAnalyticsToggleButton();
 
         if (packages.length > 0) {
-          await recheckPackageStatuses();
+          await recheckPackageStatuses({ showToastMessages: false });
         }
+        setupAutoRecheckScheduler();
 
         const analyticsToggle = document.getElementById("analyticsToggle");
 
@@ -1215,50 +1252,88 @@
         }
       }
 
-      async function recheckPackageStatuses() {
-        showToast("Checking for updates...", "info");
+      function setupAutoRecheckScheduler() {
+        if (!AUTO_RECHECK_ENABLED) {
+          return;
+        }
+        if (autoRecheckIntervalId !== null) {
+          clearInterval(autoRecheckIntervalId);
+        }
+        autoRecheckIntervalId = setInterval(() => {
+          void recheckPackageStatuses({ showToastMessages: false });
+        }, AUTO_RECHECK_INTERVAL_MS);
+      }
 
-        const updatedPackages = [];
-        let hasUpdates = false;
+      async function recheckPackageStatuses(options = {}) {
+        const showToastMessages = options.showToastMessages ?? true;
+        if (recheckInProgress) {
+          if (showToastMessages) {
+            showToast("Package check already in progress", "info");
+          }
+          return;
+        }
+        if (packages.length === 0) {
+          if (showToastMessages) {
+            showToast("No packages to update", "info");
+          }
+          return;
+        }
 
-        for (const package of packages) {
-          try {
-            const trackingParams = {
-              trackingNumber: package.trackingNumber,
-              ...package.requiredFields,
-            };
-            const trackingInfo = await apiService.getTrackingInfo(
-              package.carrier,
-              trackingParams
-            );
-            if (trackingInfo) {
-              const updatedPackage = {
-                ...package,
-                status: trackingInfo.status.code,
-                description: trackingInfo.status.description,
-                progress: calculateProgress(trackingInfo.status.code),
-                lastUpdate: trackingInfo.status.timestamp,
-                events: trackingInfo.events,
+        recheckInProgress = true;
+        if (showToastMessages) {
+          showToast("Checking for updates...", "info");
+        }
+
+        try {
+          const updatedPackages = [];
+          let hasUpdates = false;
+
+          for (const package of packages) {
+            try {
+              const trackingParams = {
+                trackingNumber: package.trackingNumber,
+                ...package.requiredFields,
               };
-              if (JSON.stringify(updatedPackage) !== JSON.stringify(package)) {
-                hasUpdates = true;
+              const trackingInfo = await apiService.getTrackingInfo(
+                package.carrier,
+                trackingParams
+              );
+              if (trackingInfo) {
+                const updatedPackage = {
+                  ...package,
+                  status: trackingInfo.status.code,
+                  description: trackingInfo.status.description,
+                  progress: calculateProgress(trackingInfo.status.code),
+                  lastUpdate: trackingInfo.status.timestamp,
+                  events: trackingInfo.events,
+                };
+                if (
+                  JSON.stringify(updatedPackage) !== JSON.stringify(package)
+                ) {
+                  hasUpdates = true;
+                }
+                updatedPackages.push(updatedPackage);
+              } else {
+                updatedPackages.push(package);
               }
-              updatedPackages.push(updatedPackage);
-            } else {
+            } catch (error) {
+              console.error(`Failed to update package ${package.id}:`, error);
               updatedPackages.push(package);
             }
-          } catch (error) {
-            console.error(`Failed to update package ${package.id}:`, error);
-            updatedPackages.push(package);
           }
-        }
-        if (hasUpdates) {
-          packages = updatedPackages;
-          savePackagesToLocalStorage();
-          renderPackages();
-          showToast("Packages updated successfully");
-        } else {
-          showToast("No updates found");
+
+          if (hasUpdates) {
+            packages = updatedPackages;
+            savePackagesToLocalStorage();
+            renderPackages();
+            if (showToastMessages) {
+              showToast("Packages updated successfully");
+            }
+          } else if (showToastMessages) {
+            showToast("No updates found");
+          }
+        } finally {
+          recheckInProgress = false;
         }
       }
 
