@@ -16,6 +16,8 @@ export class FedexSource extends TrackingSource {
   }
 
   async getTracking(params: Record<string, string>): Promise<ShipmentInfo> {
+    const credentials = this.config.apiKey as { key: string; secret: string };
+
     if (
       !token ||
       !lastTokenUpdate ||
@@ -28,9 +30,9 @@ export class FedexSource extends TrackingSource {
         },
         body:
           "grant_type=client_credentials&client_id=" +
-          this.config.apiKey.key +
+          credentials.key +
           "&client_secret=" +
-          this.config.apiKey.secret,
+          credentials.secret,
       });
       const data = await response.json();
       if (response.status !== 200) {
@@ -85,12 +87,12 @@ export class FedexSource extends TrackingSource {
         code: getTrackingProgress(lastStatus.code),
         description: lastStatus.statusByLocale,
         timestamp:
-          trackResult.dateAndTimes.find((d) => d.type === "ACTUAL_DELIVERY")
+          trackResult.dateAndTimes.find((d: any) => d.type === "ACTUAL_DELIVERY")
             ?.dateTime || events[0]?.date,
         location: formatLocation(lastStatus.scanLocation),
       },
       estimatedDelivery: trackResult.standardTransitTimeWindow?.window?.ends,
-      events: events.map((event) => ({
+      events: events.map((event: any) => ({
         code: event.eventType ?? event.eventDescription ?? "N/A",
         description:
           event.eventDescription +
@@ -118,7 +120,7 @@ const formatLocation = (location: any): string | undefined => {
   return parts.length > 0 ? parts.join(", ") : undefined;
 };
 
-const getTrackingProgress = (code) => {
+const getTrackingProgress = (code: string) => {
 
   // source : https://developer.fedex.com/api/en-us/guides/api-reference.html
 

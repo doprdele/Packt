@@ -37,7 +37,7 @@ export class LaposteSource extends TrackingSource {
       carrier: "laposte",
       status: {
         code: data.shipment.timeline
-          .filter((event) => event.status)
+          .filter((event: any) => event.status)
           .slice(-1)[0]
           .id.toString(),
         description: data.shipment.event[0].label,
@@ -45,7 +45,7 @@ export class LaposteSource extends TrackingSource {
         location: undefined,
       },
       estimatedDelivery: undefined,
-      events: data.shipment.event.map((event) => ({
+      events: data.shipment.event.map((event: any) => ({
         code: event.code,
         description: event.label,
         timestamp: event.date,

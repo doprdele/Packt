@@ -47,7 +47,7 @@ export class MRSource extends TrackingSource {
           : undefined,
       },
       estimatedDelivery: undefined,
-      events: data.Expedition.Evenements.map((event) => ({
+      events: data.Expedition.Evenements.map((event: any) => ({
         code: -1,
         description: event.Libelle,
         timestamp: event.Date,

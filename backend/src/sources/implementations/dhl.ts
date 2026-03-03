@@ -45,7 +45,7 @@ export class DHLSource extends TrackingSource {
         location: data.shipments[0].status.location?.address?.addressLocality,
       },
       estimatedDelivery: undefined,
-      events: data.shipments[0].events.map((event) => ({
+      events: data.shipments[0].events.map((event: any) => ({
         code: event.statusCode,
         description: event.status,
         timestamp: event.timestamp,

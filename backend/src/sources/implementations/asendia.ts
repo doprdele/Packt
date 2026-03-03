@@ -64,7 +64,7 @@ export class AsendiaSource extends TrackingSource {
           : undefined,
       },
       estimatedDelivery: undefined,
-      events: data.trackingBrandedDetail.map((event) => ({
+      events: data.trackingBrandedDetail.map((event: any) => ({
         code: event.eventCode,
         description: event.eventDescription,
         timestamp: event.eventOn,

@@ -393,7 +393,7 @@ describe("TrackingScheduler", () => {
       {
         USPS_SCRAPER_URL: server.baseUrl,
         PACKT_TRACKING_SCHEDULER_ENABLED: "true",
-        PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "1",
+        PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "600000",
         PACKT_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
         PACKT_TRACKING_SCHEDULER_RUN_ON_START: "false",
       },
