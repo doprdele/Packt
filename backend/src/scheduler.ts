@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { ShipmentInfo } from "./schemas/shipment";
 import { sourcesRegistry } from "./sources";
+import { resolveEnvWithSettings, type PaqqSettings } from "./settings-schema";
 
 type RuntimeEnv = Record<string, string | undefined>;
 
@@ -150,7 +151,21 @@ export class TrackingScheduler {
   private lastRunCompletedAt?: string;
   private nextRunAt?: string;
 
-  constructor(private readonly env: RuntimeEnv) {
+  constructor(
+    private readonly env: RuntimeEnv,
+    private readonly services: {
+      settings?: { getSettings: () => Promise<PaqqSettings> };
+      notifications?: {
+        notifyTrackingUpdate: (payload: {
+          source: string;
+          params: Record<string, string>;
+          friendlyName?: string;
+          previousResult?: ShipmentInfo;
+          result: ShipmentInfo;
+        }) => Promise<void>;
+      };
+    } = {}
+  ) {
     this.enabled = parseBoolean(
       readEnvWithLegacyPrefix(env, "PAQQ_TRACKING_SCHEDULER_ENABLED"),
       true
@@ -398,7 +413,8 @@ export class TrackingScheduler {
       const force = options.force === true;
       const currentTime = Date.now();
 
-      sourcesRegistry.initialize(this.env);
+      const runtimeEnv = await this.resolveRuntimeEnv();
+      sourcesRegistry.initialize(runtimeEnv);
 
       for (const [key, target] of Object.entries(this.state.watchedTargets)) {
         if (!force && target.deliveredAt) {
@@ -419,8 +435,18 @@ export class TrackingScheduler {
         }
 
         try {
-          const result = await source.getTracking(target.params, this.env);
+          const previousResult = target.lastResult;
+          const result = await source.getTracking(target.params, runtimeEnv);
           this.applySuccess(key, target, result);
+          if (this.services.notifications && previousResult) {
+            await this.services.notifications.notifyTrackingUpdate({
+              source: target.source,
+              params: target.params,
+              friendlyName: target.friendlyName,
+              previousResult,
+              result,
+            });
+          }
         } catch (error) {
           const message = error instanceof Error ? error.message : "server error";
           this.applyFailure(key, target, message);
@@ -480,6 +506,15 @@ export class TrackingScheduler {
       this.loadPromise = this.loadState();
     }
     await this.loadPromise;
+  }
+
+  private async resolveRuntimeEnv(): Promise<RuntimeEnv> {
+    if (!this.services.settings) {
+      return this.env;
+    }
+
+    const settings = await this.services.settings.getSettings();
+    return resolveEnvWithSettings(this.env, settings);
   }
 
   private async loadState(): Promise<void> {

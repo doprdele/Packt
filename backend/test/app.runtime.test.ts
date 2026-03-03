@@ -13,6 +13,7 @@ describe('runtime-neutral app handler', () => {
     const payload = (await response.json()) as Array<{ name: string }>;
     expect(payload.some((source) => source.name === 'usps')).toBe(true);
     expect(payload.some((source) => source.name === 'uniuni')).toBe(true);
+    expect(payload.some((source) => source.name === 'ups')).toBe(true);
   });
 
   it('returns 404 for unknown paths', async () => {
@@ -28,6 +29,14 @@ describe('runtime-neutral app handler', () => {
   it('returns 404 for scheduler targets endpoint in worker runtime', async () => {
     const response = await handleRequest(
       new Request('https://paqq.test/api/scheduler/targets'),
+      {}
+    );
+    expect(response.status).toBe(404);
+  });
+
+  it('returns 404 for settings endpoint in worker runtime', async () => {
+    const response = await handleRequest(
+      new Request('https://paqq.test/api/settings'),
       {}
     );
     expect(response.status).toBe(404);

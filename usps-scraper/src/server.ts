@@ -5,9 +5,15 @@ import {
 } from "node:http";
 import { scrapeUspsTracking } from "./scrape.js";
 import { scrapeUniuniTracking } from "./uniuni.js";
+import { scrapeUpsTracking } from "./ups.js";
 
 const port = Number(process.env.PORT ?? "8790");
-const TRACKING_ROUTES = new Set(["/track", "/track/usps", "/track/uniuni"]);
+const TRACKING_ROUTES = new Set([
+  "/track",
+  "/track/usps",
+  "/track/uniuni",
+  "/track/ups",
+]);
 
 function jsonResponse(
   res: ServerResponse,
@@ -66,7 +72,11 @@ const server = createServer(async (req, res) => {
     }
 
     const route =
-      req.url === "/track" || req.url === "/track/usps" ? "usps" : "uniuni";
+      req.url === "/track" || req.url === "/track/usps"
+        ? "usps"
+        : req.url === "/track/ups"
+        ? "ups"
+        : "uniuni";
 
     if (route === "usps") {
       const isAuthorized = ensureAuthToken(
@@ -78,12 +88,22 @@ const server = createServer(async (req, res) => {
       if (!isAuthorized) {
         return;
       }
-    } else {
+    } else if (route === "uniuni") {
       const isAuthorized = ensureAuthToken(
         req,
         res,
         process.env.UNIUNI_SCRAPER_TOKEN,
         "x-uniuni-scraper-token"
+      );
+      if (!isAuthorized) {
+        return;
+      }
+    } else {
+      const isAuthorized = ensureAuthToken(
+        req,
+        res,
+        process.env.UPS_SCRAPER_TOKEN,
+        "x-ups-scraper-token"
       );
       if (!isAuthorized) {
         return;
@@ -110,7 +130,9 @@ const server = createServer(async (req, res) => {
     const shipment =
       route === "usps"
         ? await scrapeUspsTracking(trackingNumber, { timeoutMs })
-        : await scrapeUniuniTracking(trackingNumber, { timeoutMs });
+        : route === "uniuni"
+        ? await scrapeUniuniTracking(trackingNumber, { timeoutMs })
+        : await scrapeUpsTracking(trackingNumber, { timeoutMs });
     return jsonResponse(res, 200, shipment);
   } catch (error) {
     const message =

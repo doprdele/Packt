@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { AddressInfo } from "node:net";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
@@ -354,5 +354,78 @@ describe("TrackingScheduler", () => {
       watchedTargets: Record<string, unknown>;
     };
     expect(Object.keys(persisted.watchedTargets).length).toBe(1);
+  });
+
+  it("calls notifications service when status changes after initial snapshot", async () => {
+    let requestCount = 0;
+    const server = await createMockScraperServer((_req, res) => {
+      requestCount += 1;
+
+      res.setHeader("content-type", "application/json");
+      res.end(
+        JSON.stringify({
+          trackingNumber: "9400150208203004850386",
+          trackingUrl:
+            "https://tools.usps.com/go/TrackConfirmAction.action?tLabels=9400150208203004850386",
+          carrier: "usps",
+          status: {
+            code: requestCount === 1 ? "3" : "4",
+            description: requestCount === 1 ? "In Transit" : "Out for Delivery",
+            timestamp:
+              requestCount === 1
+                ? "2026-03-02T10:00:00.000Z"
+                : "2026-03-02T14:00:00.000Z",
+          },
+          events: [
+            {
+              code: requestCount === 1 ? "3" : "4",
+              description: requestCount === 1 ? "In Transit" : "Out for Delivery",
+              timestamp:
+                requestCount === 1
+                  ? "2026-03-02T10:00:00.000Z"
+                  : "2026-03-02T14:00:00.000Z",
+            },
+          ],
+        })
+      );
+    });
+    cleanupTasks.push(server.close);
+
+    const stateDir = await mkdtemp(join(tmpdir(), "paqq-scheduler-test-"));
+    cleanupTasks.push(async () => {
+      await rm(stateDir, { recursive: true, force: true });
+    });
+
+    const notifyTrackingUpdate = vi.fn().mockResolvedValue(undefined);
+
+    const scheduler = new TrackingScheduler(
+      {
+        USPS_SCRAPER_URL: server.baseUrl,
+        PACKT_TRACKING_SCHEDULER_ENABLED: "true",
+        PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "1",
+        PACKT_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
+        PACKT_TRACKING_SCHEDULER_RUN_ON_START: "false",
+      },
+      {
+        notifications: {
+          notifyTrackingUpdate,
+        },
+      }
+    );
+    cleanupTasks.push(async () => scheduler.stop());
+
+    await scheduler.start();
+    await scheduler.registerTarget("usps", {
+      trackingNumber: "9400150208203004850386",
+    });
+    await scheduler.runNow({ force: true });
+    await scheduler.runNow({ force: true });
+
+    expect(notifyTrackingUpdate).toHaveBeenCalledTimes(1);
+    expect(notifyTrackingUpdate.mock.calls[0][0].source).toBe("usps");
+    expect(notifyTrackingUpdate.mock.calls[0][0].previousResult.status.code).toBe(
+      "3"
+    );
+    expect(notifyTrackingUpdate.mock.calls[0][0].result.status.code).toBe("4");
   });
 });

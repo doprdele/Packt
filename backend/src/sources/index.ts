@@ -32,7 +32,7 @@ class SourcesRegistry {
 
   initialize(env: any): void {
     this.sources.clear();
-    //this.register(new UPSSource(env)); Prod doesn't have UPS API key
+    this.register(new UPSSource(env));
     this.register(new MRSource(env));
     this.register(new AsendiaSource(env));
     this.register(new ColissimoSource(env));

@@ -1,55 +1,91 @@
-import { TrackingSource, SourceConfig } from '../base';
-import { ShipmentInfo } from '../../schemas/shipment';
-
-// 1Z262AY97298603378
+import { TrackingSource } from "../base";
+import { ShipmentInfo } from "../../schemas/shipment";
 
 export class UPSSource extends TrackingSource {
   constructor(env: Record<string, string>) {
     super({
-      name: 'ups',
-      icon: 'ups.png',
-      requiredFields: ['trackingNumber'],
-      baseUrl: 'https://webapis.ups.com/track/api',
-      apiKey: env.UPS_API_KEY
+      name: "ups",
+      icon: "ups.png",
+      requiredFields: ["trackingNumber"],
+      baseUrl: env.UPS_SCRAPER_URL ?? env.USPS_SCRAPER_URL ?? "http://127.0.0.1:8790",
+      apiKey: env.UPS_SCRAPER_TOKEN,
     });
   }
 
-  async getTracking(params: Record<string, string>): Promise<ShipmentInfo> {
-    console.log('UPS getTracking', params);
-    const response = await fetch(`${this.config.baseUrl}/Track/GetStatus?loc=en_US`, {
-        method: 'POST',
+  async getTracking(
+    params: Record<string, string>,
+    env: Record<string, string>
+  ): Promise<ShipmentInfo> {
+    const baseUrl = (
+      env.UPS_SCRAPER_URL ??
+      env.USPS_SCRAPER_URL ??
+      this.config.baseUrl
+    ).replace(/\/$/, "");
+    const token = (env.UPS_SCRAPER_TOKEN ?? this.config.apiKey) as
+      | string
+      | undefined;
+
+    const parsedTimeoutMs = Number(env.UPS_SCRAPER_TIMEOUT_MS ?? "300000");
+    const timeoutMs =
+      Number.isFinite(parsedTimeoutMs) && parsedTimeoutMs > 0
+        ? parsedTimeoutMs
+        : 300000;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const response = await fetch(`${baseUrl}/track/ups`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-XSRF-TOKEN': this.config.apiKey as string,
+          "content-type": "application/json",
+          accept: "application/json",
+          ...(token ? { "x-ups-scraper-token": token } : {}),
         },
         body: JSON.stringify({
-            Locale: 'en_US',
-            TrackingNumber: [params.trackingNumber]
-        })
-    });
-    console.log(response);
-    const data = await response.json();
+          trackingNumber: params.trackingNumber,
+          timeoutMs,
+        }),
+        signal: controller.signal,
+      });
 
-    if(response.status !== 200) {
-      throw new Error('Failed to fetch shipment information');
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data?.error ?? `UPS scraper request failed (${response.status})`);
+      }
+
+      if (!data || !data.trackingNumber || !data.status || !data.events) {
+        throw new Error("UPS scraper returned an invalid payload");
+      }
+
+      return {
+        trackingNumber: data.trackingNumber,
+        trackingUrl:
+          data.trackingUrl ??
+          `https://www.ups.com/track?loc=en_US&tracknum=${encodeURIComponent(
+            params.trackingNumber
+          )}`,
+        carrier: "ups",
+        status: {
+          code: String(data.status.code),
+          description: String(data.status.description),
+          timestamp: String(data.status.timestamp),
+          location: data.status.location ? String(data.status.location) : undefined,
+        },
+        estimatedDelivery: data.estimatedDelivery
+          ? String(data.estimatedDelivery)
+          : undefined,
+        events: Array.isArray(data.events)
+          ? data.events.map((event: any) => ({
+              code: String(event.code ?? ""),
+              description: String(event.description ?? ""),
+              timestamp: String(event.timestamp ?? ""),
+              location: event.location ? String(event.location) : undefined,
+            }))
+          : [],
+      };
+    } finally {
+      clearTimeout(timeout);
     }
-
-    console.log(data);
-    
-    return {
-      trackingNumber: params.trackingNumber,
-      carrier: 'UPS',
-      status: {
-        code: data.status.code,
-        description: data.status.description,
-        timestamp: data.status.timestamp
-      },
-      events: data.events.map(e => ({
-        code: e.code,
-        description: e.description,
-        timestamp: e.timestamp,
-        location: e.location
-      }))
-    };
   }
 }

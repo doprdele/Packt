@@ -3,7 +3,7 @@
 
   # Paqq
 
-  **A playful, self-hostable package tracker fork with USPS + UniUni support and background polling.**
+  **A playful, self-hostable package tracker fork with USPS + UniUni + UPS support and background polling.**
 </div>
 
 > Paqq is a fork of [Packt](https://github.com/Paylicier/Packt) by Paylicier.
@@ -14,11 +14,14 @@
 
 - Rebrand from Packt to **Paqq** with updated UI identity and logo
 - **UniUni** support end-to-end
-- **USPS + UniUni scraping** via Playwright/CDP + stealth hardening
+- **USPS + UniUni + UPS scraping** via Playwright/CDP + stealth hardening
 - **Asynchronous package add flow**:
   - package is saved immediately
   - modal closes immediately
   - tracking fetch runs in background with loading state
+- **Tabbed settings modal**:
+  - Notifications tab with Apprise URL management + test-notification action
+  - API keys/credentials tab to store carrier credentials in backend settings (instead of env vars)
 - **Persistent backend scheduler** for self-hosted mode:
   - watched targets are persisted
   - polling continues until delivery
@@ -36,6 +39,7 @@
 - La Poste
 - DHL
 - FedEx
+- UPS
 - USPS
 - UniUni
 
@@ -54,7 +58,7 @@
 - `backend/`: API + scheduler
   - Worker adapter (`src/index.ts`)
   - Node adapter (`src/node.ts`)
-- `usps-scraper/`: Playwright-based scraper service for USPS/UniUni
+- `usps-scraper/`: Playwright-based scraper service for USPS/UniUni/UPS
 
 ## Self-Hosted: Quick Start (Docker Compose)
 
@@ -79,7 +83,7 @@ docker compose up -d --build
 ### Default flow in compose
 
 - Frontend calls backend (`/api/*`)
-- Backend calls scraper for USPS/UniUni
+- Backend calls scraper for USPS/UniUni/UPS
 - Scheduler runs in backend and persists state to `/app/data/tracking-scheduler-state.json`
 
 ## Self-Hosted: Configuration
@@ -94,6 +98,9 @@ docker compose up -d --build
 - `PAQQ_TRACKING_SCHEDULER_INTERVAL_MS` (default `14400000`)
 - `PAQQ_TRACKING_SCHEDULER_RUN_ON_START` (default `true`)
 - `PAQQ_TRACKING_SCHEDULER_STATE_FILE` (default `/app/data/tracking-scheduler-state.json`)
+- `PAQQ_SETTINGS_FILE` (default `/app/data/paqq-settings.json`)
+- `PAQQ_APPRISE_PYTHON_BIN` (default `python3`)
+- `PAQQ_APPRISE_TIMEOUT_MS` (default `20000`)
 
 Legacy `PACKT_*` scheduler env vars are still supported for backward compatibility.
 
@@ -111,6 +118,12 @@ Legacy `PACKT_*` scheduler env vars are still supported for backward compatibili
 - `UNIUNI_SCRAPE_MAX_ATTEMPTS` (scraper retries, default `6`)
 - `UNIUNI_CDP_WS_ENDPOINT` (optional CDP endpoint)
 - `UNIUNI_TRACKING_KEY` (optional override)
+
+- `UPS_SCRAPER_URL` (backend -> scraper URL, default `http://127.0.0.1:8790`)
+- `UPS_SCRAPER_TOKEN` (optional)
+- `UPS_SCRAPER_TIMEOUT_MS` (default `300000`)
+- `UPS_SCRAPE_MAX_ATTEMPTS` (scraper retries, default `5`)
+- `UPS_CDP_WS_ENDPOINT` (optional CDP endpoint)
 
 ## Self-Hosted: Local Configuration / OrbStack
 
@@ -159,6 +172,7 @@ cd backend
 npm test
 npm run test:integration
 npm run test:live:uniuni
+npm run test:live:ups
 ```
 
 ### Scraper tests
@@ -167,6 +181,7 @@ npm run test:live:uniuni
 cd usps-scraper
 npm test
 npm run test:live
+npm run test:live:ups
 npm run test:live:uniuni
 npm run test:live:all
 ```
@@ -194,6 +209,13 @@ Returns normalized tracking payload:
 - `GET /api/scheduler/targets`
 - `POST /api/scheduler/watch`
 - `POST /api/scheduler/unwatch`
+
+### Settings endpoints (Node runtime)
+
+- `GET /api/settings/schema`
+- `GET /api/settings`
+- `PUT /api/settings`
+- `POST /api/settings/notifications/test`
 
 ## Fork Attribution
 

@@ -2,9 +2,21 @@ import { handleList } from './handlers/list';
 import { handleGet } from './handlers/get';
 import { sourcesRegistry } from './sources';
 import type { TrackingScheduler } from './scheduler';
+import {
+  CARRIER_CREDENTIAL_SCHEMAS,
+  resolveEnvWithSettings,
+  type PaqqSettings,
+} from './settings-schema';
 
 interface RequestServices {
   scheduler?: TrackingScheduler;
+  settings?: {
+    getSettings: () => Promise<PaqqSettings>;
+    updateSettings: (patch: unknown) => Promise<PaqqSettings>;
+  };
+  notifications?: {
+    sendTestNotification: () => Promise<{ ok: boolean; detail?: string }>;
+  };
 }
 
 function jsonResponse(payload: unknown, status = 200): Response {
@@ -22,7 +34,18 @@ export async function handleRequest(
   env: any,
   services: RequestServices = {}
 ): Promise<Response> {
-  sourcesRegistry.initialize(env);
+  let runtimeEnv = env;
+  if (services.settings) {
+    try {
+      const settings = await services.settings.getSettings();
+      runtimeEnv = resolveEnvWithSettings(env, settings);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to read settings';
+      return jsonResponse({ error: message }, 500);
+    }
+  }
+
+  sourcesRegistry.initialize(runtimeEnv);
 
   const url = new URL(request.url);
 
@@ -31,7 +54,66 @@ export async function handleRequest(
   }
 
   if (url.pathname === '/api/get') {
-    return handleGet(request, env, services.scheduler);
+    return handleGet(request, runtimeEnv, services.scheduler);
+  }
+
+  if (url.pathname === '/api/settings/schema' && request.method === 'GET') {
+    return jsonResponse({
+      carriers: CARRIER_CREDENTIAL_SCHEMAS,
+      notifications: {
+        fields: [
+          { key: 'enabled', label: 'Enable notifications', type: 'boolean' },
+          { key: 'appriseUrls', label: 'Apprise URLs', type: 'string[]' },
+          {
+            key: 'notifyOnStatusChange',
+            label: 'Notify on status changes',
+            type: 'boolean',
+          },
+          {
+            key: 'notifyOnDelivered',
+            label: 'Notify on delivered updates',
+            type: 'boolean',
+          },
+        ],
+      },
+    });
+  }
+
+  if (url.pathname === '/api/settings' && request.method === 'GET') {
+    if (!services.settings) {
+      return jsonResponse({ error: 'Settings are unavailable in this runtime' }, 404);
+    }
+    const settings = await services.settings.getSettings();
+    return jsonResponse(settings);
+  }
+
+  if (url.pathname === '/api/settings' && request.method === 'PUT') {
+    if (!services.settings) {
+      return jsonResponse({ error: 'Settings are unavailable in this runtime' }, 404);
+    }
+
+    let payload: unknown;
+    try {
+      payload = await request.json();
+    } catch {
+      return jsonResponse({ error: 'Invalid JSON body' }, 400);
+    }
+
+    try {
+      const updated = await services.settings.updateSettings(payload);
+      return jsonResponse(updated);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to update settings';
+      return jsonResponse({ error: message }, 400);
+    }
+  }
+
+  if (url.pathname === '/api/settings/notifications/test' && request.method === 'POST') {
+    if (!services.notifications) {
+      return jsonResponse({ error: 'Notifications are unavailable in this runtime' }, 404);
+    }
+    const result = await services.notifications.sendTestNotification();
+    return jsonResponse(result, result.ok ? 200 : 500);
   }
 
   if (url.pathname === '/api/scheduler/status') {

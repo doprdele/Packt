@@ -181,6 +181,14 @@
                 <i class="fas fa-chart-line mr-2"></i>
                 <span>Analytics</span>
               </button>
+              <button
+                id="settingsBtn"
+                class="px-4 py-2 rounded-lg bg-coffee dark:bg-gray-700 text-white shadow-md hover:opacity-90 transition-opacity whitespace-nowrap"
+                title="Open settings"
+              >
+                <i class="fas fa-gear mr-2"></i>
+                <span>Settings</span>
+              </button>
             </div>
           </div>
         </div>
@@ -343,6 +351,128 @@
         </div>
       </div>
     </div>
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden">
+      <div class="modal-wrapper">
+        <div
+          class="modal-content bg-white dark:bg-gray-800 p-6 rounded-lg w-[760px] max-w-[95%]"
+        >
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold dark:text-white">Settings</h2>
+            <button
+              id="closeSettingsBtn"
+              class="text-gray-500 hover:text-gray-700 dark:text-gray-400"
+              aria-label="Close settings"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="flex gap-2 mb-4">
+            <button
+              type="button"
+              data-settings-tab="notifications"
+              class="settings-tab-btn px-3 py-2 rounded-md text-sm font-semibold bg-coffee text-white"
+            >
+              Notifications
+            </button>
+            <button
+              type="button"
+              data-settings-tab="credentials"
+              class="settings-tab-btn px-3 py-2 rounded-md text-sm font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200"
+            >
+              API keys and credentials
+            </button>
+          </div>
+
+          <form id="settingsForm" class="space-y-4">
+            <section data-settings-panel="notifications" class="space-y-4">
+              <div class="flex items-center justify-between gap-4">
+                <label
+                  for="notificationsEnabled"
+                  class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Enable notifications
+                </label>
+                <input
+                  id="notificationsEnabled"
+                  type="checkbox"
+                  class="h-4 w-4 rounded border-gray-300 text-coffee focus:ring-coffee"
+                />
+              </div>
+              <div>
+                <label
+                  for="appriseUrls"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  Apprise URLs (one per line)
+                </label>
+                <textarea
+                  id="appriseUrls"
+                  rows="5"
+                  placeholder="discord://token@webhook_id"
+                  class="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-coffee dark:focus:border-coffee-light focus:ring-coffee dark:focus:ring-coffee-light transition-colors duration-200"
+                ></textarea>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <input
+                    id="notifyOnStatusChange"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-gray-300 text-coffee focus:ring-coffee"
+                  />
+                  Notify on status changes
+                </label>
+                <label class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                  <input
+                    id="notifyOnDelivered"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-gray-300 text-coffee focus:ring-coffee"
+                  />
+                  Notify when delivered
+                </label>
+              </div>
+              <button
+                type="button"
+                id="sendTestNotificationBtn"
+                class="px-3 py-2 rounded-md bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors duration-200"
+              >
+                Send Test Notification
+              </button>
+            </section>
+
+            <section
+              data-settings-panel="credentials"
+              class="space-y-4 hidden"
+            >
+              <p class="text-sm text-gray-600 dark:text-gray-300">
+                Configure carrier API credentials here instead of environment
+                variables.
+              </p>
+              <div
+                id="carrierCredentialsFields"
+                class="space-y-4 max-h-[360px] overflow-y-auto pr-1"
+              ></div>
+            </section>
+
+            <div class="flex justify-end gap-3 pt-2 border-t border-coffee/20 dark:border-gray-700">
+              <button
+                type="button"
+                id="cancelSettingsBtn"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors duration-200"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                id="saveSettingsBtn"
+                class="px-4 py-2 bg-coffee text-white rounded-md hover:bg-coffee-dark transition-colors duration-200"
+              >
+                Save Settings
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
     <script>
       const API_BASE_URL =
         window.__PAQQ_CONFIG__?.API_BASE_URL ||
@@ -353,6 +483,68 @@
       const LEGACY_STORAGE_KEY = "packt_packages";
       const ANALYTICS_PREF_KEY = "paqq_analytics_enabled";
       const LEGACY_ANALYTICS_PREF_KEY = "packt_analytics_enabled";
+      const SETTINGS_FALLBACK_KEY = "paqq_backend_settings_fallback";
+
+      const DEFAULT_SETTINGS = {
+        version: 1,
+        notifications: {
+          enabled: false,
+          appriseUrls: [],
+          notifyOnStatusChange: true,
+          notifyOnDelivered: true,
+        },
+        carriers: {},
+      };
+
+      const DEFAULT_CREDENTIAL_SCHEMA = [
+        {
+          carrier: "asendia",
+          title: "Asendia",
+          fields: [
+            {
+              key: "authorizationBasic",
+              label: "Authorization (Basic)",
+              secret: true,
+            },
+          ],
+        },
+        {
+          carrier: "mondialrelay",
+          title: "Mondial Relay",
+          fields: [
+            {
+              key: "requestVerificationToken",
+              label: "Request Verification Token",
+              secret: true,
+            },
+          ],
+        },
+        {
+          carrier: "laposte",
+          title: "La Poste / Colissimo / Chronopost",
+          fields: [{ key: "okapiKey", label: "X-Okapi-Key", secret: true }],
+        },
+        {
+          carrier: "dhl",
+          title: "DHL",
+          fields: [{ key: "apiKey", label: "DHL API Key", secret: true }],
+        },
+        {
+          carrier: "fedex",
+          title: "FedEx",
+          fields: [
+            { key: "clientId", label: "Client ID", secret: true },
+            { key: "clientSecret", label: "Client Secret", secret: true },
+          ],
+        },
+        {
+          carrier: "ups",
+          title: "UPS Scraper",
+          fields: [
+            { key: "scraperToken", label: "UPS scraper token", secret: true },
+          ],
+        },
+      ];
 
       function sanitizeHTML(text) {
         if (!text) return "";
@@ -378,6 +570,48 @@
         } catch {
           return "";
         }
+      }
+
+      function cloneDefaultSettings() {
+        return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+      }
+
+      function loadSettingsFallback() {
+        const raw = localStorage.getItem(SETTINGS_FALLBACK_KEY);
+        if (!raw) {
+          return cloneDefaultSettings();
+        }
+
+        try {
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") {
+            return cloneDefaultSettings();
+          }
+          return {
+            ...cloneDefaultSettings(),
+            ...parsed,
+            notifications: {
+              ...cloneDefaultSettings().notifications,
+              ...(parsed.notifications || {}),
+              appriseUrls: Array.isArray(parsed.notifications?.appriseUrls)
+                ? parsed.notifications.appriseUrls.filter(
+                    (entry) => typeof entry === "string" && entry.trim().length > 0
+                  )
+                : [],
+            },
+            carriers:
+              parsed.carriers && typeof parsed.carriers === "object"
+                ? parsed.carriers
+                : {},
+          };
+        } catch (error) {
+          console.error("Failed to parse local settings fallback:", error);
+          return cloneDefaultSettings();
+        }
+      }
+
+      function saveSettingsFallback(settings) {
+        localStorage.setItem(SETTINGS_FALLBACK_KEY, JSON.stringify(settings));
       }
 
       function isAnalyticsEnabled() {
@@ -581,6 +815,8 @@
       }
 
       let packages = [];
+      let settingsState = loadSettingsFallback();
+      let settingsSchema = DEFAULT_CREDENTIAL_SCHEMA;
       let recheckInProgress = false;
       const TRACKING_LOOKUP_MAX_ATTEMPTS = 6;
       const TRACKING_LOOKUP_RETRY_MS = 6000;
@@ -668,6 +904,105 @@
           } catch (error) {
             console.error("Error removing watched target:", error);
             return false;
+          }
+        },
+
+        async getSettingsSchema() {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/settings/schema`);
+            if (response.status === 404) {
+              return { carriers: DEFAULT_CREDENTIAL_SCHEMA };
+            }
+            if (!response.ok) {
+              throw new Error("Failed to fetch settings schema");
+            }
+            return await response.json();
+          } catch (error) {
+            console.error("Error fetching settings schema:", error);
+            return { carriers: DEFAULT_CREDENTIAL_SCHEMA };
+          }
+        },
+
+        async getSettings() {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/settings`);
+            if (response.status === 404) {
+              return loadSettingsFallback();
+            }
+            if (!response.ok) {
+              throw new Error("Failed to fetch settings");
+            }
+            const payload = await response.json();
+            saveSettingsFallback(payload);
+            return payload;
+          } catch (error) {
+            console.error("Error fetching settings:", error);
+            return loadSettingsFallback();
+          }
+        },
+
+        async updateSettings(patch) {
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/settings`, {
+              method: "PUT",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(patch),
+            });
+            if (response.status === 404) {
+              const merged = {
+                ...settingsState,
+                ...patch,
+                notifications: {
+                  ...settingsState.notifications,
+                  ...(patch.notifications || {}),
+                },
+                carriers: {
+                  ...(settingsState.carriers || {}),
+                  ...(patch.carriers || {}),
+                },
+              };
+              saveSettingsFallback(merged);
+              return { ok: true, settings: merged, usedFallback: true };
+            }
+            if (!response.ok) {
+              const errorPayload = await response
+                .json()
+                .catch(() => ({ error: "Failed to update settings" }));
+              return {
+                ok: false,
+                error: errorPayload.error || "Failed to update settings",
+              };
+            }
+            const payload = await response.json();
+            saveSettingsFallback(payload);
+            return { ok: true, settings: payload };
+          } catch (error) {
+            console.error("Error updating settings:", error);
+            return { ok: false, error: "Failed to update settings" };
+          }
+        },
+
+        async sendTestNotification() {
+          try {
+            const response = await fetch(
+              `${API_BASE_URL}/api/settings/notifications/test`,
+              {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: "{}",
+              }
+            );
+            if (response.status === 404) {
+              return { ok: false, detail: "Notification backend is unavailable" };
+            }
+            const payload = await response.json().catch(() => ({}));
+            return {
+              ok: response.ok && payload.ok !== false,
+              detail: payload.detail,
+            };
+          } catch (error) {
+            console.error("Error sending test notification:", error);
+            return { ok: false, detail: "Failed to send test notification" };
           }
         },
       };
@@ -925,7 +1260,152 @@
       const deletePackageBtn = document.getElementById("deletePackageBtn");
       const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
       const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+      const settingsBtn = document.getElementById("settingsBtn");
+      const settingsModal = document.getElementById("settingsModal");
+      const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+      const cancelSettingsBtn = document.getElementById("cancelSettingsBtn");
+      const settingsForm = document.getElementById("settingsForm");
+      const saveSettingsBtn = document.getElementById("saveSettingsBtn");
+      const sendTestNotificationBtn = document.getElementById(
+        "sendTestNotificationBtn"
+      );
       let currentPackage = null;
+      let activeSettingsTab = "notifications";
+
+      function setActiveSettingsTab(nextTab) {
+        activeSettingsTab = nextTab;
+
+        document.querySelectorAll(".settings-tab-btn").forEach((btn) => {
+          const isActive = btn.dataset.settingsTab === nextTab;
+          btn.classList.toggle("bg-coffee", isActive);
+          btn.classList.toggle("text-white", isActive);
+          btn.classList.toggle("bg-gray-200", !isActive);
+          btn.classList.toggle("dark:bg-gray-700", !isActive);
+          btn.classList.toggle("text-gray-700", !isActive);
+          btn.classList.toggle("dark:text-gray-200", !isActive);
+        });
+
+        document.querySelectorAll("[data-settings-panel]").forEach((panel) => {
+          panel.classList.toggle(
+            "hidden",
+            panel.dataset.settingsPanel !== nextTab
+          );
+        });
+      }
+
+      function renderCarrierCredentialsFields() {
+        const container = document.getElementById("carrierCredentialsFields");
+        container.innerHTML = settingsSchema
+          .map((carrier) => {
+            const values = settingsState.carriers?.[carrier.carrier] || {};
+            const fieldsHtml = carrier.fields
+              .map((field) => {
+                const inputType = field.secret ? "password" : "text";
+                const value =
+                  typeof values[field.key] === "string" ? values[field.key] : "";
+                return `
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    ${sanitizeHTML(field.label)}
+                  </label>
+                  <input
+                    type="${inputType}"
+                    data-credential-carrier="${sanitizeHTML(carrier.carrier)}"
+                    data-credential-key="${sanitizeHTML(field.key)}"
+                    value="${sanitizeHTML(value)}"
+                    placeholder="${sanitizeHTML(field.placeholder || "")}"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-coffee dark:focus:border-coffee-light focus:ring-coffee dark:focus:ring-coffee-light transition-colors duration-200"
+                  />
+                </div>
+              `;
+              })
+              .join("");
+
+            return `
+              <div class="rounded-lg border border-coffee/20 dark:border-gray-700 p-3">
+                <h3 class="text-sm font-semibold text-coffee-dark dark:text-coffee-light mb-2">
+                  ${sanitizeHTML(carrier.title)}
+                </h3>
+                ${
+                  carrier.description
+                    ? `<p class="text-xs text-gray-500 dark:text-gray-400 mb-2">${sanitizeHTML(
+                        carrier.description
+                      )}</p>`
+                    : ""
+                }
+                <div class="space-y-3">
+                  ${fieldsHtml}
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function applySettingsToForm() {
+        document.getElementById("notificationsEnabled").checked = Boolean(
+          settingsState.notifications?.enabled
+        );
+        document.getElementById("notifyOnStatusChange").checked = Boolean(
+          settingsState.notifications?.notifyOnStatusChange
+        );
+        document.getElementById("notifyOnDelivered").checked = Boolean(
+          settingsState.notifications?.notifyOnDelivered
+        );
+        document.getElementById("appriseUrls").value = (
+          settingsState.notifications?.appriseUrls || []
+        ).join("\n");
+        renderCarrierCredentialsFields();
+      }
+
+      function readSettingsFormPatch() {
+        const notificationsPatch = {
+          enabled: document.getElementById("notificationsEnabled").checked,
+          notifyOnStatusChange: document.getElementById("notifyOnStatusChange")
+            .checked,
+          notifyOnDelivered: document.getElementById("notifyOnDelivered")
+            .checked,
+          appriseUrls: document
+            .getElementById("appriseUrls")
+            .value.split("\n")
+            .map((entry) => entry.trim())
+            .filter((entry) => entry.length > 0),
+        };
+
+        const carriersPatch = {};
+        document
+          .querySelectorAll("[data-credential-carrier][data-credential-key]")
+          .forEach((input) => {
+            const carrier = input.dataset.credentialCarrier;
+            const key = input.dataset.credentialKey;
+            const value = input.value.trim();
+            if (!carrier || !key) {
+              return;
+            }
+            if (!carriersPatch[carrier]) {
+              carriersPatch[carrier] = {};
+            }
+            carriersPatch[carrier][key] = value;
+          });
+
+        return {
+          notifications: notificationsPatch,
+          carriers: carriersPatch,
+        };
+      }
+
+      async function loadSettingsFromBackend() {
+        const [schemaPayload, settingsPayload] = await Promise.all([
+          apiService.getSettingsSchema(),
+          apiService.getSettings(),
+        ]);
+
+        settingsSchema = Array.isArray(schemaPayload?.carriers)
+          ? schemaPayload.carriers
+          : DEFAULT_CREDENTIAL_SCHEMA;
+        settingsState = settingsPayload || cloneDefaultSettings();
+        applySettingsToForm();
+      }
 
       function showPackageDetails(package) {
         currentPackage = package;
@@ -1413,6 +1893,56 @@
         }
       });
 
+      settingsBtn.addEventListener("click", async () => {
+        await loadSettingsFromBackend();
+        setActiveSettingsTab(activeSettingsTab);
+        showModal(settingsModal);
+      });
+
+      closeSettingsBtn.addEventListener("click", () => hideModal(settingsModal));
+      cancelSettingsBtn.addEventListener("click", () =>
+        hideModal(settingsModal)
+      );
+
+      document.querySelectorAll(".settings-tab-btn").forEach((button) => {
+        button.addEventListener("click", () => {
+          setActiveSettingsTab(button.dataset.settingsTab);
+        });
+      });
+
+      sendTestNotificationBtn.addEventListener("click", async () => {
+        const result = await apiService.sendTestNotification();
+        if (result.ok) {
+          showToast("Test notification sent successfully");
+          return;
+        }
+        showToast(result.detail || "Failed to send test notification", "error");
+      });
+
+      settingsForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        saveSettingsBtn.disabled = true;
+        saveSettingsBtn.textContent = "Saving...";
+
+        const patch = readSettingsFormPatch();
+        const result = await apiService.updateSettings(patch);
+        saveSettingsBtn.disabled = false;
+        saveSettingsBtn.textContent = "Save Settings";
+
+        if (!result.ok) {
+          showToast(result.error || "Failed to save settings", "error");
+          return;
+        }
+
+        settingsState = result.settings;
+        showToast(
+          result.usedFallback
+            ? "Saved locally. Backend settings API unavailable."
+            : "Settings saved successfully"
+        );
+        hideModal(settingsModal);
+      });
+
       window.addEventListener("click", (e) => {
         if (e.target === packageDetailsModal) {
           packageDetailsModal.classList.add("hidden");
@@ -1420,6 +1950,8 @@
         } else if (e.target === deleteConfirmModal) {
           deleteConfirmModal.classList.add("hidden");
           deleteConfirmModal.classList.remove("flex");
+        } else if (e.target === settingsModal) {
+          hideModal(settingsModal);
         }
       });
 
@@ -1524,6 +2056,8 @@
         renderPackages();
         resumePendingPackageLookups();
         updateAnalyticsToggleButton();
+        setActiveSettingsTab("notifications");
+        applySettingsToForm();
 
         if (packages.length > 0) {
           await recheckPackageStatuses({ showToastMessages: false });

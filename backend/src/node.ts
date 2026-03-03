@@ -2,10 +2,17 @@ import { createServer } from 'node:http';
 import { Readable } from 'node:stream';
 import { handleRequest } from './app';
 import { TrackingScheduler } from './scheduler';
+import { RuntimeSettingsStore } from './settings-store';
+import { AppriseNotifier } from './apprise-notifier';
 
 const port = Number(process.env.PORT ?? '8787');
 const host = process.env.HOST ?? '0.0.0.0';
-const scheduler = new TrackingScheduler(process.env);
+const settingsStore = new RuntimeSettingsStore(process.env);
+const notifier = new AppriseNotifier(process.env, settingsStore);
+const scheduler = new TrackingScheduler(process.env, {
+  settings: settingsStore,
+  notifications: notifier,
+});
 
 void scheduler.start();
 
@@ -46,7 +53,11 @@ const server = createServer(async (req, res) => {
     }
 
     const request = new Request(requestUrl, init);
-    const response = await handleRequest(request, process.env, { scheduler });
+    const response = await handleRequest(request, process.env, {
+      scheduler,
+      settings: settingsStore,
+      notifications: notifier,
+    });
 
     res.statusCode = response.status;
     response.headers.forEach((value, key) => {
