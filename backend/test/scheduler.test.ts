@@ -70,16 +70,12 @@ afterEach(async () => {
 });
 
 describe("TrackingScheduler", () => {
-  it("uses PAQQ scheduler env keys and keeps PACKT keys as fallback", () => {
+  it("uses PAQQ scheduler env keys", () => {
     const scheduler = new TrackingScheduler({
       PAQQ_TRACKING_SCHEDULER_ENABLED: "true",
       PAQQ_TRACKING_SCHEDULER_INTERVAL_MS: "5000",
       PAQQ_TRACKING_SCHEDULER_STATE_FILE: "/tmp/paqq-state.json",
       PAQQ_TRACKING_SCHEDULER_RUN_ON_START: "false",
-      PACKT_TRACKING_SCHEDULER_ENABLED: "false",
-      PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "9999",
-      PACKT_TRACKING_SCHEDULER_STATE_FILE: "/tmp/legacy-state.json",
-      PACKT_TRACKING_SCHEDULER_RUN_ON_START: "true",
     });
 
     const status = scheduler.getStatus();
@@ -123,10 +119,10 @@ describe("TrackingScheduler", () => {
 
     const scheduler = new TrackingScheduler({
       USPS_SCRAPER_URL: server.baseUrl,
-      PACKT_TRACKING_SCHEDULER_ENABLED: "true",
-      PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "1000",
-      PACKT_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
-      PACKT_TRACKING_SCHEDULER_RUN_ON_START: "false",
+      PAQQ_TRACKING_SCHEDULER_ENABLED: "true",
+      PAQQ_TRACKING_SCHEDULER_INTERVAL_MS: "1000",
+      PAQQ_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
+      PAQQ_TRACKING_SCHEDULER_RUN_ON_START: "false",
     });
     cleanupTasks.push(async () => scheduler.stop());
 
@@ -148,10 +144,10 @@ describe("TrackingScheduler", () => {
     });
 
     const scheduler = new TrackingScheduler({
-      PACKT_TRACKING_SCHEDULER_ENABLED: "true",
-      PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "14400000",
-      PACKT_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
-      PACKT_TRACKING_SCHEDULER_RUN_ON_START: "false",
+      PAQQ_TRACKING_SCHEDULER_ENABLED: "true",
+      PAQQ_TRACKING_SCHEDULER_INTERVAL_MS: "14400000",
+      PAQQ_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
+      PAQQ_TRACKING_SCHEDULER_RUN_ON_START: "false",
     });
     cleanupTasks.push(async () => scheduler.stop());
 
@@ -216,10 +212,10 @@ describe("TrackingScheduler", () => {
 
     const scheduler = new TrackingScheduler({
       UNIUNI_SCRAPER_URL: server.baseUrl,
-      PACKT_TRACKING_SCHEDULER_ENABLED: "true",
-      PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "14400000",
-      PACKT_TRACKING_SCHEDULER_STATE_FILE: stateFile,
-      PACKT_TRACKING_SCHEDULER_RUN_ON_START: "false",
+      PAQQ_TRACKING_SCHEDULER_ENABLED: "true",
+      PAQQ_TRACKING_SCHEDULER_INTERVAL_MS: "14400000",
+      PAQQ_TRACKING_SCHEDULER_STATE_FILE: stateFile,
+      PAQQ_TRACKING_SCHEDULER_RUN_ON_START: "false",
     });
     cleanupTasks.push(async () => scheduler.stop());
 
@@ -274,10 +270,10 @@ describe("TrackingScheduler", () => {
 
     const scheduler = new TrackingScheduler({
       USPS_SCRAPER_URL: server.baseUrl,
-      PACKT_TRACKING_SCHEDULER_ENABLED: "true",
-      PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "3600000",
-      PACKT_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
-      PACKT_TRACKING_SCHEDULER_RUN_ON_START: "false",
+      PAQQ_TRACKING_SCHEDULER_ENABLED: "true",
+      PAQQ_TRACKING_SCHEDULER_INTERVAL_MS: "3600000",
+      PAQQ_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
+      PAQQ_TRACKING_SCHEDULER_RUN_ON_START: "false",
     });
     cleanupTasks.push(async () => scheduler.stop());
 
@@ -331,10 +327,10 @@ describe("TrackingScheduler", () => {
 
     const scheduler = new TrackingScheduler({
       USPS_SCRAPER_URL: server.baseUrl,
-      PACKT_TRACKING_SCHEDULER_ENABLED: "true",
-      PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "14400000",
-      PACKT_TRACKING_SCHEDULER_STATE_FILE: stateFile,
-      PACKT_TRACKING_SCHEDULER_RUN_ON_START: "false",
+      PAQQ_TRACKING_SCHEDULER_ENABLED: "true",
+      PAQQ_TRACKING_SCHEDULER_INTERVAL_MS: "14400000",
+      PAQQ_TRACKING_SCHEDULER_STATE_FILE: stateFile,
+      PAQQ_TRACKING_SCHEDULER_RUN_ON_START: "false",
     });
     cleanupTasks.push(async () => scheduler.stop());
 
@@ -392,10 +388,10 @@ describe("TrackingScheduler", () => {
     const scheduler = new TrackingScheduler(
       {
         USPS_SCRAPER_URL: server.baseUrl,
-        PACKT_TRACKING_SCHEDULER_ENABLED: "true",
-        PACKT_TRACKING_SCHEDULER_INTERVAL_MS: "600000",
-        PACKT_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
-        PACKT_TRACKING_SCHEDULER_RUN_ON_START: "false",
+        PAQQ_TRACKING_SCHEDULER_ENABLED: "true",
+        PAQQ_TRACKING_SCHEDULER_INTERVAL_MS: "600000",
+        PAQQ_TRACKING_SCHEDULER_STATE_FILE: join(stateDir, "scheduler.json"),
+        PAQQ_TRACKING_SCHEDULER_RUN_ON_START: "false",
       },
       {
         notifications: {

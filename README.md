@@ -6,13 +6,13 @@
   **A playful, self-hostable package tracker fork with USPS + UniUni + UPS support and background polling.**
 </div>
 
-> Paqq is a fork of [Packt](https://github.com/Paylicier/Packt) by Paylicier.
+> Paqq is a maintained fork focused on self-hosted tracking with scraper-first carrier support.
 >
 > "I am a strong defender of vibe coding, because, most likely, vibe coding produces better results than you can."
 
 ## What Paqq Adds
 
-- Rebrand from Packt to **Paqq** with updated UI identity and logo
+- Paqq-first naming and branding across the stack
 - **UniUni** support end-to-end
 - **USPS + UniUni + UPS scraping** via Playwright/CDP + stealth hardening
 - **Asynchronous package add flow**:
@@ -90,7 +90,7 @@ docker compose up -d --build
 
 ### Frontend runtime config
 
-- `PAQQ_API_BASE_URL` (fallback supported: `PACKT_API_BASE_URL`)
+- `PAQQ_API_BASE_URL`
 
 ### Backend scheduler env
 
@@ -101,8 +101,6 @@ docker compose up -d --build
 - `PAQQ_SETTINGS_FILE` (default `/app/data/paqq-settings.json`)
 - `PAQQ_APPRISE_PYTHON_BIN` (default `python3`)
 - `PAQQ_APPRISE_TIMEOUT_MS` (default `20000`)
-
-Legacy `PACKT_*` scheduler env vars are still supported for backward compatibility.
 
 ### Scraper/Carrier env
 
@@ -132,7 +130,7 @@ Paqq is deployable through the companion `local-configuration` stack behind shar
 From your `local-configuration` repo:
 
 ```bash
-just packt-shared-traefik-orbstack
+just paqq-shared-traefik-orbstack
 ```
 
 Current defaults in that stack are already aligned to Paqq:
@@ -236,5 +234,5 @@ This fork includes code from Packt by Paylicier, and original notices are preser
 
 <div align="center">
   <img src="./frontend/logo.svg" alt="Paqq Logo" width="520" />
-  <p><strong>Paqq by Evan Sarmiento</strong> • forked from Packt by Paylicier</p>
+  <p><strong>Paqq by Evan Sarmiento</strong></p>
 </div>

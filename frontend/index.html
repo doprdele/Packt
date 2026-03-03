@@ -148,7 +148,7 @@
               © 2026 Paqq by Evan Sarmiento
             </p>
             <p class="mt-1 text-coffee-dark dark:text-coffee-light">
-              Based on Packt by Paylicier. Original project credit preserved
+              Fork by Evan Sarmiento. Original project credit preserved
               per MPL-2.0.
             </p>
           </div>
@@ -476,13 +476,10 @@
     <script>
       const API_BASE_URL =
         window.__PAQQ_CONFIG__?.API_BASE_URL ||
-        window.__PACKT_CONFIG__?.API_BASE_URL ||
-        "https://packt.notri1.workers.dev";
+        "https://paqq.notri1.workers.dev";
 
       const STORAGE_KEY = "paqq_packages";
-      const LEGACY_STORAGE_KEY = "packt_packages";
       const ANALYTICS_PREF_KEY = "paqq_analytics_enabled";
-      const LEGACY_ANALYTICS_PREF_KEY = "packt_analytics_enabled";
       const SETTINGS_FALLBACK_KEY = "paqq_backend_settings_fallback";
 
       const DEFAULT_SETTINGS = {
@@ -616,13 +613,6 @@
 
       function isAnalyticsEnabled() {
         const pref = localStorage.getItem(ANALYTICS_PREF_KEY);
-        if (pref === null) {
-          const legacyPref = localStorage.getItem(LEGACY_ANALYTICS_PREF_KEY);
-          if (legacyPref !== null) {
-            localStorage.setItem(ANALYTICS_PREF_KEY, legacyPref);
-            return legacyPref === "true";
-          }
-        }
         return pref === null ? true : pref === "true";
       }
 
@@ -685,9 +675,7 @@
       }
 
       function loadPackagesFromLocalStorage() {
-        const stored =
-          localStorage.getItem(STORAGE_KEY) ||
-          localStorage.getItem(LEGACY_STORAGE_KEY);
+        const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           packages = JSON.parse(stored);
         }

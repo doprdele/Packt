@@ -1,7 +1,7 @@
 {
     "name": "Paqq",
     "short_name": "Paqq",
-    "description": "A playful package tracker fork by Evan Sarmiento, based on Packt",
+    "description": "A playful package tracker by Evan Sarmiento",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#D4BBA7",

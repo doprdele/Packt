@@ -8,22 +8,6 @@ import {
   type RuntimeEnv,
 } from "./settings-schema";
 
-function readEnvWithLegacyPrefix(
-  env: RuntimeEnv,
-  key: string
-): string | undefined {
-  if (typeof env[key] === "string") {
-    return env[key];
-  }
-
-  const legacyKey = key.replace(/^PAQQ_/, "PACKT_");
-  if (legacyKey !== key && typeof env[legacyKey] === "string") {
-    return env[legacyKey];
-  }
-
-  return undefined;
-}
-
 export class RuntimeSettingsStore {
   private readonly settingsFile: string;
   private state: PaqqSettings = defaultPaqqSettings();
@@ -31,9 +15,7 @@ export class RuntimeSettingsStore {
   private saveQueue: Promise<void> = Promise.resolve();
 
   constructor(private readonly env: RuntimeEnv) {
-    this.settingsFile =
-      readEnvWithLegacyPrefix(env, "PAQQ_SETTINGS_FILE") ??
-      "/app/data/paqq-settings.json";
+    this.settingsFile = env.PAQQ_SETTINGS_FILE ?? "/app/data/paqq-settings.json";
   }
 
   getSettingsFile(): string {
