@@ -215,7 +215,8 @@ Returns normalized tracking payload:
 
 Imports recent Amazon shipments and invoice artifacts. Supports two-step auth:
 
-- Request 1: `username`, `password`, optional `maxShipments`, `lookbackDays`, `archiveDelivered`
+- Request 1: `username`, `password`, optional `totpKey`, `maxShipments`, `lookbackDays`, `archiveDelivered`
+- If `totpKey` is provided, backend attempts automatic TOTP submission when prompted.
 - If `status === "totp_required"`: Request 2 with `challengeId` + `totpCode`
 
 ### Scheduler endpoints (Node runtime)

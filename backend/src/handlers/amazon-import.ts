@@ -8,6 +8,16 @@ function jsonResponse(payload: unknown, status = 200): Response {
   });
 }
 
+interface NormalizedAmazonImportPayload {
+  payload: Record<string, unknown>;
+  totpKey?: string;
+}
+
+interface ScraperImportResponse {
+  response: Response;
+  result: Record<string, unknown>;
+}
+
 function normalizeString(value: unknown): string | undefined {
   if (typeof value !== "string") {
     return undefined;
@@ -42,7 +52,7 @@ function normalizeInteger(value: unknown): number | undefined {
   return Math.floor(parsed);
 }
 
-function normalizePayload(raw: unknown): Record<string, unknown> {
+function normalizePayload(raw: unknown): NormalizedAmazonImportPayload {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
     throw new Error("Payload must be an object");
   }
@@ -52,6 +62,8 @@ function normalizePayload(raw: unknown): Record<string, unknown> {
   const password = normalizeString(input.password);
   const challengeId = normalizeString(input.challengeId);
   const totpCode = normalizeString(input.totpCode);
+  const totpKey =
+    normalizeString(input.totpKey) ?? normalizeString(input.totpSecret);
   const maxShipments = normalizeInteger(input.maxShipments);
   const lookbackDays = normalizeInteger(input.lookbackDays);
   const archiveDelivered = normalizeBoolean(input.archiveDelivered);
@@ -77,7 +89,7 @@ function normalizePayload(raw: unknown): Record<string, unknown> {
     payload.archiveDelivered = archiveDelivered;
   }
   if (typeof timeoutMs === "number") payload.timeoutMs = timeoutMs;
-  return payload;
+  return { payload, totpKey };
 }
 
 function withEnvDefaults(
@@ -106,6 +118,113 @@ function withEnvDefaults(
   return merged;
 }
 
+function decodeBase32Secret(secret: string): Uint8Array {
+  const normalized = secret
+    .toUpperCase()
+    .replace(/[\s-]/g, "")
+    .replace(/=+$/g, "");
+  if (!normalized) {
+    throw new Error("TOTP key is empty");
+  }
+
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0;
+  let value = 0;
+  const output: number[] = [];
+
+  for (const char of normalized) {
+    const index = alphabet.indexOf(char);
+    if (index === -1) {
+      throw new Error(
+        "TOTP key must be a valid Base32 string (A-Z and 2-7)."
+      );
+    }
+
+    value = (value << 5) | index;
+    bits += 5;
+    if (bits >= 8) {
+      output.push((value >>> (bits - 8)) & 0xff);
+      bits -= 8;
+    }
+  }
+
+  if (output.length === 0) {
+    throw new Error("TOTP key could not be decoded");
+  }
+
+  return new Uint8Array(output);
+}
+
+function getWebCrypto(): Crypto {
+  if (typeof globalThis.crypto !== "undefined" && globalThis.crypto.subtle) {
+    return globalThis.crypto;
+  }
+  throw new Error("Web Crypto is unavailable in this runtime");
+}
+
+async function generateTotpCode(secret: string): Promise<string> {
+  const cryptoApi = getWebCrypto();
+  const secretBytes = decodeBase32Secret(secret);
+  let counter = Math.floor(Date.now() / 1000 / 30);
+  const message = new Uint8Array(8);
+  for (let i = 7; i >= 0; i -= 1) {
+    message[i] = counter & 0xff;
+    counter = Math.floor(counter / 256);
+  }
+
+  const key = await cryptoApi.subtle.importKey(
+    "raw",
+    secretBytes,
+    { name: "HMAC", hash: "SHA-1" },
+    false,
+    ["sign"]
+  );
+  const signature = new Uint8Array(
+    await cryptoApi.subtle.sign("HMAC", key, message)
+  );
+  const offset = signature[signature.length - 1] & 0x0f;
+  const binary =
+    ((signature[offset] & 0x7f) << 24) |
+    ((signature[offset + 1] & 0xff) << 16) |
+    ((signature[offset + 2] & 0xff) << 8) |
+    (signature[offset + 3] & 0xff);
+  const otp = binary % 1_000_000;
+  return String(otp).padStart(6, "0");
+}
+
+function normalizeResultBody(result: unknown): Record<string, unknown> {
+  if (!result || typeof result !== "object" || Array.isArray(result)) {
+    return {};
+  }
+  return result as Record<string, unknown>;
+}
+
+async function postScraperImport(
+  baseUrl: string,
+  token: string | undefined,
+  payload: Record<string, unknown>,
+  signal: AbortSignal
+): Promise<ScraperImportResponse> {
+  const response = await fetch(`${baseUrl}/amazon/import`, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+      ...(token ? { "x-amazon-scraper-token": token } : {}),
+    },
+    body: JSON.stringify(payload),
+    signal,
+  });
+
+  const result = normalizeResultBody(
+    await response
+      .json()
+      .catch(() => ({ error: "Amazon scraper returned invalid JSON" }))
+  );
+
+  return { response, result };
+}
+
 export async function handleAmazonImport(
   request: Request,
   env: Record<string, string | undefined>
@@ -117,15 +236,16 @@ export async function handleAmazonImport(
     return jsonResponse({ error: "Invalid JSON body" }, 400);
   }
 
-  let payload: Record<string, unknown>;
+  let normalized: NormalizedAmazonImportPayload;
   try {
-    payload = normalizePayload(rawBody);
+    normalized = normalizePayload(rawBody);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Invalid import payload";
     return jsonResponse({ error: message }, 400);
   }
-  payload = withEnvDefaults(payload, env);
+  const totpKey = normalized.totpKey;
+  const payload = withEnvDefaults(normalized.payload, env);
 
   const baseUrl = (
     env.AMAZON_SCRAPER_URL ??
@@ -143,34 +263,78 @@ export async function handleAmazonImport(
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(`${baseUrl}/amazon/import`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        accept: "application/json",
-        ...(token ? { "x-amazon-scraper-token": token } : {}),
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal,
-    });
-
-    const result = await response
-      .json()
-      .catch(() => ({ error: "Amazon scraper returned invalid JSON" }));
-
-    if (!response.ok && response.status !== 202) {
+    const primaryAttempt = await postScraperImport(
+      baseUrl,
+      token,
+      payload,
+      controller.signal
+    );
+    if (!primaryAttempt.response.ok && primaryAttempt.response.status !== 202) {
       return jsonResponse(
         {
           error:
-            typeof result?.error === "string"
-              ? result.error
-              : `Amazon scraper request failed (${response.status})`,
+            typeof primaryAttempt.result.error === "string"
+              ? primaryAttempt.result.error
+              : `Amazon scraper request failed (${primaryAttempt.response.status})`,
         },
-        response.status >= 400 && response.status < 600 ? response.status : 500
+        primaryAttempt.response.status >= 400 &&
+          primaryAttempt.response.status < 600
+          ? primaryAttempt.response.status
+          : 500
       );
     }
 
-    return jsonResponse(result, response.status);
+    const shouldAutoGenerateTotp =
+      !payload.challengeId &&
+      Boolean(totpKey) &&
+      primaryAttempt.result.status === "totp_required" &&
+      typeof primaryAttempt.result.challengeId === "string";
+
+    if (!shouldAutoGenerateTotp) {
+      return jsonResponse(primaryAttempt.result, primaryAttempt.response.status);
+    }
+
+    try {
+      const totpCode = await generateTotpCode(totpKey!);
+      const followupAttempt = await postScraperImport(
+        baseUrl,
+        token,
+        {
+          challengeId: primaryAttempt.result.challengeId,
+          totpCode,
+        },
+        controller.signal
+      );
+
+      if (!followupAttempt.response.ok && followupAttempt.response.status !== 202) {
+        return jsonResponse(
+          {
+            error:
+              typeof followupAttempt.result.error === "string"
+                ? followupAttempt.result.error
+                : `Amazon scraper request failed (${followupAttempt.response.status})`,
+          },
+          followupAttempt.response.status >= 400 &&
+            followupAttempt.response.status < 600
+            ? followupAttempt.response.status
+            : 500
+        );
+      }
+
+      return jsonResponse(followupAttempt.result, followupAttempt.response.status);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Automatic TOTP generation failed";
+      return jsonResponse(
+        {
+          ...primaryAttempt.result,
+          autoTotpError: message,
+        },
+        202
+      );
+    }
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       return jsonResponse({ error: "Amazon import timed out" }, 504);

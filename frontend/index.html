@@ -318,6 +318,27 @@
                   class="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-coffee dark:focus:border-coffee-light focus:ring-coffee dark:focus:ring-coffee-light transition-colors duration-200"
                 />
               </div>
+              <div>
+                <label
+                  for="amazonTotpKey"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  TOTP key (optional)
+                </label>
+                <input
+                  type="password"
+                  id="amazonTotpKey"
+                  autocomplete="off"
+                  spellcheck="false"
+                  placeholder="Base32 secret, e.g. JBSWY3DPEHPK3PXP"
+                  class="w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm p-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:border-coffee dark:focus:border-coffee-light focus:ring-coffee dark:focus:ring-coffee-light transition-colors duration-200"
+                />
+                <p class="mt-1 text-xs text-amber-700 dark:text-amber-300">
+                  <i class="fas fa-triangle-exclamation mr-1"></i>
+                  Warning: this key can generate login codes automatically.
+                  Only provide it if you trust this environment.
+                </p>
+              </div>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label
@@ -1524,6 +1545,7 @@
       const amazonTotpRow = document.getElementById("amazonTotpRow");
       const amazonUsernameInput = document.getElementById("amazonUsername");
       const amazonPasswordInput = document.getElementById("amazonPassword");
+      const amazonTotpKeyInput = document.getElementById("amazonTotpKey");
       const amazonTotpInput = document.getElementById("amazonTotpCode");
       const amazonMaxShipmentsInput = document.getElementById(
         "amazonMaxShipments"
@@ -1606,6 +1628,7 @@
         if (clearCredentials) {
           amazonUsernameInput.value = "";
           amazonPasswordInput.value = "";
+          amazonTotpKeyInput.value = "";
         }
         applyAmazonImportDefaultsFromSettings();
       }
@@ -1776,6 +1799,7 @@
         return {
           username: amazonUsernameInput.value.trim(),
           password: amazonPasswordInput.value,
+          totpKey: amazonTotpKeyInput.value.trim(),
           maxShipments: parseAmazonBoundedInt(
             amazonMaxShipmentsInput.value || "15",
             15,
@@ -1813,8 +1837,17 @@
           amazonTotpRow.classList.remove("hidden");
           amazonImportStartBtn.classList.add("hidden");
           amazonImportSubmitTotpBtn.classList.remove("hidden");
+          const attemptedAutoTotp =
+            typeof payload?.totpKey === "string" &&
+            payload.totpKey.trim().length > 0;
+          const autoTotpError =
+            typeof responseBody.autoTotpError === "string"
+              ? ` (${responseBody.autoTotpError})`
+              : "";
           setAmazonImportStatus(
-            "Amazon requested TOTP. Enter your current code to continue.",
+            attemptedAutoTotp
+              ? `Automatic TOTP did not complete${autoTotpError}. Enter your current code to continue.`
+              : "Amazon requested TOTP. Enter your current code to continue.",
             "info"
           );
           amazonTotpInput.focus();

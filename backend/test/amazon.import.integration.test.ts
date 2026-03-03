@@ -176,6 +176,69 @@ describe("Amazon import integration", () => {
     expect(payload.status).toBe("totp_required");
   });
 
+  it("auto-submits TOTP when a TOTP key is provided", async () => {
+    const server = await createMockScraperServer((req, res, body, requests) => {
+      if (req.url !== "/amazon/import" || req.method !== "POST") {
+        res.statusCode = 404;
+        res.end("not found");
+        return;
+      }
+
+      const payload = JSON.parse(body);
+      if (requests.length === 1) {
+        expect(payload.username).toBe("user@example.com");
+        expect(payload.password).toBe("pass123");
+        expect(payload.totpKey).toBeUndefined();
+        res.statusCode = 202;
+        res.setHeader("content-type", "application/json");
+        res.end(
+          JSON.stringify({
+            status: "totp_required",
+            challengeId: "challenge-auto-1",
+            expiresAt: "2026-03-03T16:10:00.000Z",
+          })
+        );
+        return;
+      }
+
+      expect(payload.challengeId).toBe("challenge-auto-1");
+      expect(payload.totpCode).toMatch(/^\d{6}$/);
+      res.statusCode = 200;
+      res.setHeader("content-type", "application/json");
+      res.end(
+        JSON.stringify({
+          status: "completed",
+          importedAt: "2026-03-03T16:00:00.000Z",
+          lookbackDays: 30,
+          maxShipments: 15,
+          archiveDelivered: true,
+          shipments: [],
+        })
+      );
+    });
+    serversToClose.push(server.close);
+
+    const response = await handleRequest(
+      new Request("https://paqq.test/api/amazon/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          username: "user@example.com",
+          password: "pass123",
+          totpKey: "JBSWY3DPEHPK3PXP",
+        }),
+      }),
+      {
+        AMAZON_SCRAPER_URL: server.baseUrl,
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as { status: string };
+    expect(payload.status).toBe("completed");
+    expect(server.requests.length).toBe(2);
+  });
+
   it("validates required credential fields", async () => {
     const response = await handleRequest(
       new Request("https://paqq.test/api/amazon/import", {
