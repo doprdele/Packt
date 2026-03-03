@@ -50,7 +50,12 @@ describe("settings schema", () => {
         dhl: { apiKey: "dhl-key" },
         fedex: { clientId: "fedex-id", clientSecret: "fedex-secret" },
         ups: { scraperToken: "ups-token" },
-        amazon: { scraperToken: "amazon-token" },
+        amazon: {
+          scraperToken: "amazon-token",
+          defaultMaxShipments: "22",
+          defaultLookbackDays: "45",
+          defaultArchiveDelivered: "false",
+        },
       },
     });
 
@@ -63,6 +68,9 @@ describe("settings schema", () => {
     expect(env.FEDEX_SECRET_KEY).toBe("fedex-secret");
     expect(env.UPS_SCRAPER_TOKEN).toBe("ups-token");
     expect(env.AMAZON_SCRAPER_TOKEN).toBe("amazon-token");
+    expect(env.AMAZON_IMPORT_DEFAULT_MAX_SHIPMENTS).toBe("22");
+    expect(env.AMAZON_IMPORT_DEFAULT_LOOKBACK_DAYS).toBe("45");
+    expect(env.AMAZON_IMPORT_DEFAULT_ARCHIVE_DELIVERED).toBe("false");
   });
 
   it("parses persisted settings and falls back to defaults", () => {

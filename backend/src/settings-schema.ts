@@ -111,13 +111,32 @@ export const CARRIER_CREDENTIAL_SCHEMAS: CarrierCredentialSchema[] = [
   {
     carrier: "amazon",
     title: "Amazon Scraper",
-    description: "Optional token for securing Amazon import scraper requests.",
+    description:
+      "Amazon scraper security token and default import behavior overrides.",
     fields: [
       {
         key: "scraperToken",
         label: "Amazon scraper token",
         envKey: "AMAZON_SCRAPER_TOKEN",
         secret: true,
+      },
+      {
+        key: "defaultMaxShipments",
+        label: "Default max shipments",
+        envKey: "AMAZON_IMPORT_DEFAULT_MAX_SHIPMENTS",
+        placeholder: "15",
+      },
+      {
+        key: "defaultLookbackDays",
+        label: "Default lookback days",
+        envKey: "AMAZON_IMPORT_DEFAULT_LOOKBACK_DAYS",
+        placeholder: "30",
+      },
+      {
+        key: "defaultArchiveDelivered",
+        label: "Default archive delivered (true/false)",
+        envKey: "AMAZON_IMPORT_DEFAULT_ARCHIVE_DELIVERED",
+        placeholder: "true",
       },
     ],
   },

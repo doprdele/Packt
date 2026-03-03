@@ -695,6 +695,21 @@
               label: "Amazon scraper token",
               secret: true,
             },
+            {
+              key: "defaultMaxShipments",
+              label: "Default max shipments",
+              placeholder: "15",
+            },
+            {
+              key: "defaultLookbackDays",
+              label: "Default lookback days",
+              placeholder: "30",
+            },
+            {
+              key: "defaultArchiveDelivered",
+              label: "Default archive delivered (true/false)",
+              placeholder: "true",
+            },
           ],
         },
       ];
@@ -1242,6 +1257,9 @@
           document.getElementById("additionalFields");
         carrierSelect.innerHTML = `
         <option value="">Select a carrier</option>
+        <option value="__amazon_import" data-required-fields='[]' data-icon="">
+            AMAZON (Import via account)
+        </option>
         ${sources
           .map(
             (source) => `
@@ -1258,6 +1276,18 @@
     `;
         carrierSelect.addEventListener("change", function () {
           const selectedOption = this.options[this.selectedIndex];
+          if (selectedOption.value === "__amazon_import") {
+            this.value = "";
+            additionalFieldsContainer.innerHTML = "";
+            amazonImportPanel.classList.remove("hidden");
+            setAmazonImportStatus(
+              "Use Amazon import below to sign in and fetch shipments.",
+              "info"
+            );
+            amazonUsernameInput.focus();
+            return;
+          }
+
           const requiredFields = JSON.parse(
             selectedOption.dataset.requiredFields || "[]"
           );
@@ -1577,6 +1607,56 @@
           amazonUsernameInput.value = "";
           amazonPasswordInput.value = "";
         }
+        applyAmazonImportDefaultsFromSettings();
+      }
+
+      function parseAmazonBooleanText(value, fallback) {
+        if (typeof value !== "string") {
+          return fallback;
+        }
+        const normalized = value.trim().toLowerCase();
+        if (["1", "true", "yes", "on"].includes(normalized)) {
+          return true;
+        }
+        if (["0", "false", "no", "off"].includes(normalized)) {
+          return false;
+        }
+        return fallback;
+      }
+
+      function parseAmazonBoundedInt(value, fallback, min, max) {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed)) {
+          return fallback;
+        }
+        const rounded = Math.floor(parsed);
+        if (rounded < min) return min;
+        if (rounded > max) return max;
+        return rounded;
+      }
+
+      function applyAmazonImportDefaultsFromSettings() {
+        const defaults = settingsState?.carriers?.amazon || {};
+        const maxShipments = parseAmazonBoundedInt(
+          defaults.defaultMaxShipments,
+          15,
+          1,
+          75
+        );
+        const lookbackDays = parseAmazonBoundedInt(
+          defaults.defaultLookbackDays,
+          30,
+          1,
+          365
+        );
+        const archiveDelivered = parseAmazonBooleanText(
+          defaults.defaultArchiveDelivered,
+          true
+        );
+
+        amazonMaxShipmentsInput.value = String(maxShipments);
+        amazonLookbackDaysInput.value = String(lookbackDays);
+        amazonArchiveDeliveredInput.checked = archiveDelivered;
       }
 
       function normalizeAmazonShipmentCarrier(shipmentCarrier) {
@@ -1696,8 +1776,18 @@
         return {
           username: amazonUsernameInput.value.trim(),
           password: amazonPasswordInput.value,
-          maxShipments: Number(amazonMaxShipmentsInput.value || 15),
-          lookbackDays: Number(amazonLookbackDaysInput.value || 30),
+          maxShipments: parseAmazonBoundedInt(
+            amazonMaxShipmentsInput.value || "15",
+            15,
+            1,
+            75
+          ),
+          lookbackDays: parseAmazonBoundedInt(
+            amazonLookbackDaysInput.value || "30",
+            30,
+            1,
+            365
+          ),
           archiveDelivered: amazonArchiveDeliveredInput.checked,
         };
       }
@@ -1881,6 +1971,7 @@
           settingsState.notifications?.appriseUrls || []
         ).join("\n");
         renderCarrierCredentialsFields();
+        applyAmazonImportDefaultsFromSettings();
       }
 
       function readSettingsFormPatch() {

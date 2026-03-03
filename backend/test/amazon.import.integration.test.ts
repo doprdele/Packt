@@ -190,4 +190,51 @@ describe("Amazon import integration", () => {
     const payload = (await response.json()) as { error: string };
     expect(payload.error).toContain("username and password");
   });
+
+  it("applies configured Amazon import defaults when request omits toggles", async () => {
+    const server = await createMockScraperServer((req, res, body) => {
+      if (req.url !== "/amazon/import" || req.method !== "POST") {
+        res.statusCode = 404;
+        res.end("not found");
+        return;
+      }
+
+      const payload = JSON.parse(body);
+      expect(payload.maxShipments).toBe(21);
+      expect(payload.lookbackDays).toBe(41);
+      expect(payload.archiveDelivered).toBe(false);
+
+      res.setHeader("content-type", "application/json");
+      res.end(
+        JSON.stringify({
+          status: "completed",
+          importedAt: "2026-03-03T16:00:00.000Z",
+          lookbackDays: 41,
+          maxShipments: 21,
+          archiveDelivered: false,
+          shipments: [],
+        })
+      );
+    });
+    serversToClose.push(server.close);
+
+    const response = await handleRequest(
+      new Request("https://paqq.test/api/amazon/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          username: "user@example.com",
+          password: "pass123",
+        }),
+      }),
+      {
+        AMAZON_SCRAPER_URL: server.baseUrl,
+        AMAZON_IMPORT_DEFAULT_MAX_SHIPMENTS: "21",
+        AMAZON_IMPORT_DEFAULT_LOOKBACK_DAYS: "41",
+        AMAZON_IMPORT_DEFAULT_ARCHIVE_DELIVERED: "false",
+      }
+    );
+
+    expect(response.status).toBe(200);
+  });
 });

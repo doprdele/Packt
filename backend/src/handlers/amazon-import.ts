@@ -80,6 +80,32 @@ function normalizePayload(raw: unknown): Record<string, unknown> {
   return payload;
 }
 
+function withEnvDefaults(
+  payload: Record<string, unknown>,
+  env: Record<string, string | undefined>
+): Record<string, unknown> {
+  const merged = { ...payload };
+  if (typeof merged.maxShipments === "undefined") {
+    const value = normalizeInteger(env.AMAZON_IMPORT_DEFAULT_MAX_SHIPMENTS);
+    if (typeof value === "number") {
+      merged.maxShipments = value;
+    }
+  }
+  if (typeof merged.lookbackDays === "undefined") {
+    const value = normalizeInteger(env.AMAZON_IMPORT_DEFAULT_LOOKBACK_DAYS);
+    if (typeof value === "number") {
+      merged.lookbackDays = value;
+    }
+  }
+  if (typeof merged.archiveDelivered === "undefined") {
+    const value = normalizeBoolean(env.AMAZON_IMPORT_DEFAULT_ARCHIVE_DELIVERED);
+    if (typeof value === "boolean") {
+      merged.archiveDelivered = value;
+    }
+  }
+  return merged;
+}
+
 export async function handleAmazonImport(
   request: Request,
   env: Record<string, string | undefined>
@@ -99,6 +125,7 @@ export async function handleAmazonImport(
       error instanceof Error ? error.message : "Invalid import payload";
     return jsonResponse({ error: message }, 400);
   }
+  payload = withEnvDefaults(payload, env);
 
   const baseUrl = (
     env.AMAZON_SCRAPER_URL ??
