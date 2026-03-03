@@ -4,6 +4,8 @@
   # Paqq
 
   **A playful, self-hostable package tracker fork with USPS + UniUni + UPS support and background polling.**
+
+  Website: **https://doprdele.github.io/paqq/**
 </div>
 
 > Paqq is a maintained fork focused on self-hosted tracking with scraper-first carrier support.

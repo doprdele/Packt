@@ -1,0 +1,11 @@
+title: Paqq
+description: "Self-hosted multi-carrier package tracking with USPS, UniUni, and UPS stealth scraping, async polling, and notifications."
+url: "https://doprdele.github.io"
+baseurl: "/paqq"
+theme: minima
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+markdown: kramdown
+kramdown:
+  input: GFM
