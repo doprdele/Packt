@@ -1,37 +1,49 @@
 <svg width="640" height="220" viewBox="0 0 640 220" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="32" y1="20" x2="608" y2="200" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#ECDACB"/>
-      <stop offset="1" stop-color="#C69773"/>
+    <linearGradient id="panel" x1="34" y1="30" x2="606" y2="190" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0D1017"/>
+      <stop offset="1" stop-color="#1A1F2C"/>
     </linearGradient>
-    <filter id="shadow" x="0" y="0" width="640" height="220" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+    <linearGradient id="metal" x1="34" y1="30" x2="606" y2="190" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F1E8DD"/>
+      <stop offset="1" stop-color="#C8B7A3"/>
+    </linearGradient>
+    <filter id="drop" x="0" y="0" width="640" height="220" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
       <feFlood flood-opacity="0" result="BackgroundImageFix"/>
       <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-      <feOffset dy="6"/>
-      <feGaussianBlur stdDeviation="8"/>
+      <feOffset dy="8"/>
+      <feGaussianBlur stdDeviation="9"/>
       <feComposite in2="hardAlpha" operator="out"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0.23 0 0 0 0 0.17 0 0 0 0 0.14 0 0 0 0.32 0"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.06 0 0 0 0 0.05 0 0 0 0 0.04 0 0 0 0.45 0"/>
       <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1"/>
       <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1" result="shape"/>
     </filter>
   </defs>
 
-  <g filter="url(#shadow)">
-    <rect x="24" y="24" width="592" height="164" rx="48" fill="url(#bg)"/>
-    <rect x="24" y="24" width="592" height="164" rx="48" stroke="#7A5338" stroke-width="8"/>
+  <g filter="url(#drop)">
+    <path d="M36 38L604 38L620 56L620 164L604 182L36 182L20 164L20 56L36 38Z" fill="url(#panel)"/>
+    <path d="M36 38L604 38L620 56L620 164L604 182L36 182L20 164L20 56L36 38Z" stroke="url(#metal)" stroke-width="6"/>
   </g>
 
-  <g transform="translate(72 66)">
-    <rect width="76" height="76" rx="18" fill="#7A5338"/>
-    <path d="M38 13L59 24V46L38 57L17 46V24L38 13Z" fill="#F4E8DF"/>
-    <path d="M38 13V57M17 24L38 35L59 24" stroke="#7A5338" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M44 52H596L586 68H34L44 52Z" fill="#C1282D"/>
+  <path d="M590 152H614L604 168H580L590 152Z" fill="#C1282D"/>
+
+  <g fill="#ECE2D5">
+    <path d="M86 158V62H138L151 75V109L138 122H111V158H86ZM111 103H132L136 99V85L132 81H111V103Z"/>
+    <path d="M164 158L196 62H226L258 158H233L226 134H195L188 158H164ZM201 114H220L211 84H210L201 114Z"/>
+
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M267 62H333L347 76V142L333 156H307L324 171L307 184L283 156H267L253 142V76L267 62ZM280 80L275 85V133L280 138H320L325 143V147L330 152H332L335 149V85L330 80H280Z"/>
+
+    <g transform="translate(100 0)">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M267 62H333L347 76V142L333 156H307L324 171L307 184L283 156H267L253 142V76L267 62ZM280 80L275 85V133L280 138H320L325 143V147L330 152H332L335 149V85L330 80H280Z"/>
+    </g>
   </g>
 
-  <text x="172" y="128" fill="#3E3A39" font-family="Montserrat, Arial, sans-serif" font-size="98" font-weight="800" letter-spacing="-2">Paqq</text>
+  <path d="M455 150L486 150L500 136L528 136L514 150L543 150L529 164L469 164L455 150Z" fill="#C1282D"/>
 
-  <g transform="translate(522 60) rotate(-12)">
-    <rect width="54" height="54" rx="14" fill="#7A5338"/>
-    <path d="M27 11L42 19V35L27 43L12 35V19L27 11Z" fill="#F4E8DF"/>
-    <path d="M27 11V43M12 19L27 27L42 19" stroke="#7A5338" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(525 62) rotate(-12)">
+    <rect width="56" height="56" rx="12" fill="#131823" stroke="#E7D8C7" stroke-width="3"/>
+    <path d="M28 10L44 19V37L28 46L12 37V19L28 10Z" fill="#EDE4D7"/>
+    <path d="M28 10V46M12 19L28 28L44 19" stroke="#131823" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 </svg>
