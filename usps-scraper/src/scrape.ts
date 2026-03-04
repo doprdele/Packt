@@ -1,7 +1,17 @@
 import { chromium } from "playwright-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import type { Browser, BrowserContext, Locator, Page } from "playwright";
+import type {
+  Browser,
+  BrowserContext,
+  BrowserContextOptions,
+  Locator,
+  Page,
+} from "playwright";
 import { normalizeUspsTracking, type RawUspsTracking } from "./normalize.js";
+import {
+  persistCarrierSessionState,
+  withCarrierSessionState,
+} from "./session-state.js";
 import type { ScrapeOptions, ShipmentInfo } from "./types.js";
 
 const chromiumWithFlags = chromium as typeof chromium & {
@@ -57,12 +67,12 @@ function getExecutablePath(): string | undefined {
 async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> {
   const cdpEndpoint = process.env.USPS_CDP_WS_ENDPOINT?.trim();
 
-  const contextOptions = {
+  const contextOptions = await withCarrierSessionState("usps", {
     locale: "en-US",
     timezoneId: process.env.USPS_TIMEZONE ?? "America/New_York",
     userAgent: process.env.USPS_USER_AGENT ?? DEFAULT_USER_AGENT,
     viewport: { width: 1366, height: 900 },
-  };
+  } satisfies BrowserContextOptions);
 
   if (cdpEndpoint) {
     const browser = await chromium.connectOverCDP(cdpEndpoint, {
@@ -74,6 +84,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
       return {
         context,
         close: async () => {
+          await persistCarrierSessionState("usps", context).catch(() => undefined);
           await browser.close();
         },
       };
@@ -83,6 +94,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
     return {
       context,
       close: async () => {
+        await persistCarrierSessionState("usps", context).catch(() => undefined);
         await context.close();
         await browser.close();
       },
@@ -107,6 +119,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
   return {
     context,
     close: async () => {
+      await persistCarrierSessionState("usps", context).catch(() => undefined);
       await context.close();
       await browser.close();
     },

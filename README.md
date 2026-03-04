@@ -108,6 +108,13 @@ docker compose up -d --build
 
 ### Scraper/Carrier env
 
+- `PAQQ_SCRAPER_STATE_DIR` (persistent browser state directory, default auto-detected)
+- `PAQQ_SCRAPER_PERSIST_SESSION_STATE` (default `true`)
+- `AMAZON_PERSIST_SESSION_STATE` (carrier override, optional)
+- `UPS_PERSIST_SESSION_STATE` (carrier override, optional)
+- `USPS_PERSIST_SESSION_STATE` (carrier override, optional)
+- `UNIUNI_PERSIST_SESSION_STATE` (carrier override, optional)
+
 - `USPS_SCRAPER_URL` (backend -> scraper URL, default `http://127.0.0.1:8790`)
 - `USPS_SCRAPER_TOKEN` (optional)
 - `USPS_SCRAPER_TIMEOUT_MS` (default `300000`)
@@ -132,6 +139,8 @@ docker compose up -d --build
 - `AMAZON_SCRAPER_TIMEOUT_MS` (backend timeout, default `300000`)
 - `AMAZON_IMPORT_TIMEOUT_MS` (scraper timeout, default `60000`)
 - `AMAZON_CDP_WS_ENDPOINT` (optional CDP endpoint)
+- Amazon session cookies/local storage are persisted by default so authenticated
+  sessions can be reused longer between imports.
 
 ## Self-Hosted: Local Configuration / OrbStack
 

@@ -1,7 +1,16 @@
 import { chromium } from "playwright-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import type { Browser, BrowserContext, Page } from "playwright";
+import type {
+  Browser,
+  BrowserContext,
+  BrowserContextOptions,
+  Page,
+} from "playwright";
 import { normalizeUpsTracking } from "./normalize-ups.js";
+import {
+  persistCarrierSessionState,
+  withCarrierSessionState,
+} from "./session-state.js";
 import type { ScrapeOptions, ShipmentInfo } from "./types.js";
 
 const chromiumWithFlags = chromium as typeof chromium & {
@@ -60,7 +69,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
     compact(process.env.UPS_CDP_WS_ENDPOINT) ??
     compact(process.env.USPS_CDP_WS_ENDPOINT);
 
-  const contextOptions = {
+  const contextOptions = await withCarrierSessionState("ups", {
     locale: "en-US",
     timezoneId:
       process.env.UPS_TIMEZONE ??
@@ -71,7 +80,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
       process.env.USPS_USER_AGENT ??
       DEFAULT_USER_AGENT,
     viewport: { width: 1366, height: 900 },
-  };
+  } satisfies BrowserContextOptions);
 
   if (cdpEndpoint) {
     const browser = await chromium.connectOverCDP(cdpEndpoint, {
@@ -79,9 +88,11 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
     });
 
     if (browser.contexts().length > 0) {
+      const context = browser.contexts()[0];
       return {
-        context: browser.contexts()[0],
+        context,
         close: async () => {
+          await persistCarrierSessionState("ups", context).catch(() => undefined);
           await browser.close();
         },
       };
@@ -91,6 +102,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
     return {
       context,
       close: async () => {
+        await persistCarrierSessionState("ups", context).catch(() => undefined);
         await context.close();
         await browser.close();
       },
@@ -115,6 +127,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
   return {
     context,
     close: async () => {
+      await persistCarrierSessionState("ups", context).catch(() => undefined);
       await context.close();
       await browser.close();
     },

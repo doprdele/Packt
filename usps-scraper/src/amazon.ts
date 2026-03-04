@@ -1,13 +1,22 @@
 import { randomUUID } from "node:crypto";
 import { chromium } from "playwright-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import type { Browser, BrowserContext, Page } from "playwright";
+import type {
+  Browser,
+  BrowserContext,
+  BrowserContextOptions,
+  Page,
+} from "playwright";
 import type {
   AmazonImportRequest,
   AmazonImportResponse,
   AmazonImportedShipment,
   ShipmentStatus,
 } from "./types.js";
+import {
+  persistCarrierSessionState,
+  withCarrierSessionState,
+} from "./session-state.js";
 
 const chromiumWithFlags = chromium as typeof chromium & {
   __paqqStealthApplied?: boolean;
@@ -232,7 +241,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
     compact(process.env.AMAZON_CDP_WS_ENDPOINT) ??
     compact(process.env.USPS_CDP_WS_ENDPOINT);
 
-  const contextOptions = {
+  const contextOptions = await withCarrierSessionState("amazon", {
     locale: "en-US",
     timezoneId:
       process.env.AMAZON_TIMEZONE ??
@@ -243,16 +252,20 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
       process.env.USPS_USER_AGENT ??
       DEFAULT_USER_AGENT,
     viewport: { width: 1440, height: 960 },
-  };
+  } satisfies BrowserContextOptions);
 
   if (cdpEndpoint) {
     const browser = await chromium.connectOverCDP(cdpEndpoint, {
       timeout: timeoutMs,
     });
     if (browser.contexts().length > 0) {
+      const context = browser.contexts()[0];
       return {
-        context: browser.contexts()[0],
+        context,
         close: async () => {
+          await persistCarrierSessionState("amazon", context).catch(
+            () => undefined
+          );
           await browser.close();
         },
       };
@@ -262,6 +275,9 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
     return {
       context,
       close: async () => {
+        await persistCarrierSessionState("amazon", context).catch(
+          () => undefined
+        );
         await context.close();
         await browser.close();
       },
@@ -285,6 +301,9 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
   return {
     context,
     close: async () => {
+      await persistCarrierSessionState("amazon", context).catch(
+        () => undefined
+      );
       await context.close();
       await browser.close();
     },
@@ -365,15 +384,45 @@ async function signInWithPassword(
   await page.waitForTimeout(700);
   await ensureNotBlocked(page);
 
+  if (await findTotpSelector(page)) {
+    return { needsTotp: true };
+  }
+
+  if (!page.url().includes("/ap/")) {
+    return { needsTotp: false };
+  }
+
   if (await hasSelector(page, "#ap_email")) {
     await page.locator("#ap_email").fill(config.username);
     await clickIfPresent(page, [
       "#continue",
       "input[type='submit'][aria-labelledby='continue-announce']",
     ]);
+    await page.waitForLoadState("domcontentloaded", { timeout: config.timeoutMs });
+    await page.waitForTimeout(500);
+    await ensureNotBlocked(page);
+
+    if (await findTotpSelector(page)) {
+      return { needsTotp: true };
+    }
+
+    if (!page.url().includes("/ap/")) {
+      return { needsTotp: false };
+    }
   }
 
-  await page.waitForSelector("#ap_password", { timeout: config.timeoutMs });
+  if (!(await hasSelector(page, "#ap_password"))) {
+    if (await findTotpSelector(page)) {
+      return { needsTotp: true };
+    }
+    if (!page.url().includes("/ap/")) {
+      return { needsTotp: false };
+    }
+    throw new Error(
+      "Amazon sign-in flow did not expose password input. Please retry."
+    );
+  }
+
   await page.locator("#ap_password").fill(config.password);
   await clickIfPresent(page, ["#signInSubmit", "input[type='submit']"]);
   await page.waitForLoadState("domcontentloaded", { timeout: config.timeoutMs });
@@ -383,6 +432,10 @@ async function signInWithPassword(
   const totpSelector = await findTotpSelector(page);
   if (totpSelector) {
     return { needsTotp: true };
+  }
+
+  if (!page.url().includes("/ap/")) {
+    return { needsTotp: false };
   }
 
   const bodyText = (await page.textContent("body"))?.toLowerCase() ?? "";
@@ -426,17 +479,24 @@ async function submitTotp(
   }
 }
 
-async function ensureOrdersPage(
+async function hasAuthenticatedOrdersSession(
   page: Page,
   timeoutMs: number
-): Promise<void> {
+): Promise<boolean> {
   await page.goto(`${AMAZON_ORDERS_URL}?opt=ab&digitalOrders=0`, {
     waitUntil: "domcontentloaded",
     timeout: timeoutMs,
   });
   await page.waitForTimeout(900);
+  return !page.url().includes("/ap/signin");
+}
 
-  if (page.url().includes("/ap/signin")) {
+async function ensureOrdersPage(
+  page: Page,
+  timeoutMs: number
+): Promise<void> {
+  const authenticated = await hasAuthenticatedOrdersSession(page, timeoutMs);
+  if (!authenticated) {
     throw new Error(
       "Amazon session is not authenticated. Please retry and complete login."
     );
@@ -931,23 +991,30 @@ export async function importAmazonShipments(
   });
 
   try {
-    const loginResult = await signInWithPassword(page, config);
-    if (loginResult.needsTotp) {
-      const id = randomUUID();
-      const expiresAt = Date.now() + TOTP_SESSION_TTL_MS;
-      pendingTotpSessions.set(id, {
-        id,
-        createdAt: Date.now(),
-        expiresAt,
-        config,
-        session,
-        page,
-      });
-      return {
-        status: "totp_required",
-        challengeId: id,
-        expiresAt: new Date(expiresAt).toISOString(),
-      };
+    const alreadyAuthenticated = await hasAuthenticatedOrdersSession(
+      page,
+      config.timeoutMs
+    );
+
+    if (!alreadyAuthenticated) {
+      const loginResult = await signInWithPassword(page, config);
+      if (loginResult.needsTotp) {
+        const id = randomUUID();
+        const expiresAt = Date.now() + TOTP_SESSION_TTL_MS;
+        pendingTotpSessions.set(id, {
+          id,
+          createdAt: Date.now(),
+          expiresAt,
+          config,
+          session,
+          page,
+        });
+        return {
+          status: "totp_required",
+          challengeId: id,
+          expiresAt: new Date(expiresAt).toISOString(),
+        };
+      }
     }
 
     const result = await completeImport(page, session.context, config);

@@ -1,10 +1,14 @@
 import { chromium } from "playwright-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import type { Browser, BrowserContext } from "playwright";
+import type { Browser, BrowserContext, BrowserContextOptions } from "playwright";
 import {
   normalizeUniuniTracking,
   type UniuniTrackingApiResponse,
 } from "./normalize-uniuni.js";
+import {
+  persistCarrierSessionState,
+  withCarrierSessionState,
+} from "./session-state.js";
 import type { ScrapeOptions, ShipmentInfo } from "./types.js";
 
 const chromiumWithFlags = chromium as typeof chromium & {
@@ -66,7 +70,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
     process.env.UNIUNI_CDP_WS_ENDPOINT?.trim() ||
     process.env.USPS_CDP_WS_ENDPOINT?.trim();
 
-  const contextOptions = {
+  const contextOptions = await withCarrierSessionState("uniuni", {
     locale: "en-US",
     timezoneId:
       process.env.UNIUNI_TIMEZONE ??
@@ -77,7 +81,7 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
       process.env.USPS_USER_AGENT ??
       DEFAULT_USER_AGENT,
     viewport: { width: 1366, height: 900 },
-  };
+  } satisfies BrowserContextOptions);
 
   if (cdpEndpoint) {
     const browser = await chromium.connectOverCDP(cdpEndpoint, {
@@ -89,6 +93,9 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
       return {
         context,
         close: async () => {
+          await persistCarrierSessionState("uniuni", context).catch(
+            () => undefined
+          );
           await browser.close();
         },
       };
@@ -98,6 +105,9 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
     return {
       context,
       close: async () => {
+        await persistCarrierSessionState("uniuni", context).catch(
+          () => undefined
+        );
         await context.close();
         await browser.close();
       },
@@ -122,6 +132,9 @@ async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> 
   return {
     context,
     close: async () => {
+      await persistCarrierSessionState("uniuni", context).catch(
+        () => undefined
+      );
       await context.close();
       await browser.close();
     },
