@@ -47,6 +47,26 @@ const AMAZON_PASSWORD_SELECTORS = [
   "input[name='password']",
   "input[type='password']",
 ] as const;
+const AMAZON_TOTP_SELECTORS = [
+  "#auth-mfa-otpcode",
+  "input[name='otpCode']",
+  "input[name='code']",
+  "input[id*='otp']",
+  "input[name='cvf_captcha_input']",
+] as const;
+const AMAZON_INTERMEDIATE_SUBMIT_SELECTORS = [
+  "#continue",
+  "input[type='submit'][aria-labelledby='continue-announce']",
+  "input[type='submit'][name='continue']",
+  "button[name='continue']",
+  "button[type='submit']",
+  "input[type='submit']",
+] as const;
+const AMAZON_VERIFICATION_URL_FRAGMENTS = [
+  "/ap/challenge",
+  "/ap/cvf",
+  "/ap/mfa",
+] as const;
 
 const DEFAULT_USER_AGENT =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) " +
@@ -336,24 +356,8 @@ async function persistAmazonSessionSnapshot(context: BrowserContext): Promise<vo
   await persistCarrierSessionState("amazon", context).catch(() => undefined);
 }
 
-async function hasSelector(page: Page, selector: string): Promise<boolean> {
-  const locator = page.locator(selector).first();
-  return (await locator.count()) > 0;
-}
-
 async function findTotpSelector(page: Page): Promise<string | undefined> {
-  const selectors = [
-    "#auth-mfa-otpcode",
-    "input[name='otpCode']",
-    "input[name='code']",
-    "input[id*='otp']",
-  ];
-  for (const selector of selectors) {
-    if (await hasSelector(page, selector)) {
-      return selector;
-    }
-  }
-  return undefined;
+  return findFirstVisibleSelector(page, [...AMAZON_TOTP_SELECTORS]);
 }
 
 async function findFirstVisibleSelector(
@@ -390,6 +394,34 @@ async function ensureNotBlocked(page: Page): Promise<void> {
   }
 }
 
+async function isVerificationChallenge(page: Page): Promise<boolean> {
+  const url = page.url().toLowerCase();
+  if (
+    AMAZON_VERIFICATION_URL_FRAGMENTS.some((fragment) =>
+      url.includes(fragment)
+    )
+  ) {
+    return true;
+  }
+
+  if (await findTotpSelector(page)) {
+    return true;
+  }
+
+  const bodyText = (await page.textContent("body"))?.toLowerCase() ?? "";
+  if (
+    bodyText.includes("verification code") ||
+    bodyText.includes("one-time password") ||
+    bodyText.includes("one time password") ||
+    bodyText.includes("two-step verification") ||
+    bodyText.includes("enter the code")
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
 async function signInWithPassword(
   page: Page,
   config: NormalizedImportConfig
@@ -401,7 +433,7 @@ async function signInWithPassword(
   await page.waitForTimeout(700);
   await ensureNotBlocked(page);
 
-  if (await findTotpSelector(page)) {
+  if (await isVerificationChallenge(page)) {
     return { needsTotp: true };
   }
 
@@ -415,11 +447,7 @@ async function signInWithPassword(
   if (emailSelector) {
     await page.locator(emailSelector).first().fill(config.username);
     const submittedEmail = await clickIfPresent(page, [
-      "#continue",
-      "input[type='submit'][aria-labelledby='continue-announce']",
-      "input[type='submit'][name='continue']",
-      "button[type='submit']",
-      "input[type='submit']",
+      ...AMAZON_INTERMEDIATE_SUBMIT_SELECTORS,
     ]);
     if (!submittedEmail) {
       await page.locator(emailSelector).first().press("Enter").catch(
@@ -430,7 +458,7 @@ async function signInWithPassword(
     await page.waitForTimeout(500);
     await ensureNotBlocked(page);
 
-    if (await findTotpSelector(page)) {
+    if (await isVerificationChallenge(page)) {
       return { needsTotp: true };
     }
 
@@ -442,6 +470,24 @@ async function signInWithPassword(
   let passwordSelector = await findFirstVisibleSelector(page, [
     ...AMAZON_PASSWORD_SELECTORS,
   ]);
+  if (!passwordSelector) {
+    const advanced = await clickIfPresent(page, [
+      ...AMAZON_INTERMEDIATE_SUBMIT_SELECTORS,
+    ]);
+    if (advanced) {
+      await page.waitForLoadState("domcontentloaded", {
+        timeout: config.timeoutMs,
+      });
+      await page.waitForTimeout(500);
+      await ensureNotBlocked(page);
+      if (await isVerificationChallenge(page)) {
+        return { needsTotp: true };
+      }
+      passwordSelector = await findFirstVisibleSelector(page, [
+        ...AMAZON_PASSWORD_SELECTORS,
+      ]);
+    }
+  }
   if (!passwordSelector) {
     try {
       await page.waitForSelector(AMAZON_PASSWORD_SELECTORS.join(", "), {
@@ -456,7 +502,7 @@ async function signInWithPassword(
   }
 
   if (!passwordSelector) {
-    if (await findTotpSelector(page)) {
+    if (await isVerificationChallenge(page)) {
       return { needsTotp: true };
     }
     if (!page.url().includes("/ap/")) {
@@ -473,8 +519,7 @@ async function signInWithPassword(
   await page.waitForTimeout(700);
   await ensureNotBlocked(page);
 
-  const totpSelector = await findTotpSelector(page);
-  if (totpSelector) {
+  if (await isVerificationChallenge(page)) {
     return { needsTotp: true };
   }
 
