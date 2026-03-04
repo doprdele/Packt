@@ -49,9 +49,15 @@ const AMAZON_PASSWORD_SELECTORS = [
 ] as const;
 const AMAZON_TOTP_SELECTORS = [
   "#auth-mfa-otpcode",
+  "#cvf-input-code",
+  "#input-box-otp",
+  "#auth-cvf-enter-code",
   "input[name='otpCode']",
   "input[name='code']",
+  "input[name='cvf_code']",
+  "input[name='verifyToken']",
   "input[id*='otp']",
+  "#auth-captcha-guess",
   "input[name='cvf_captcha_input']",
 ] as const;
 const AMAZON_INTERMEDIATE_SUBMIT_SELECTORS = [
@@ -414,7 +420,10 @@ async function isVerificationChallenge(page: Page): Promise<boolean> {
     bodyText.includes("one-time password") ||
     bodyText.includes("one time password") ||
     bodyText.includes("two-step verification") ||
-    bodyText.includes("enter the code")
+    bodyText.includes("enter the code") ||
+    bodyText.includes("verify it's you") ||
+    bodyText.includes("choose a way to receive a code") ||
+    bodyText.includes("approval notification")
   ) {
     return true;
   }
@@ -508,9 +517,9 @@ async function signInWithPassword(
     if (!page.url().includes("/ap/")) {
       return { needsTotp: false };
     }
-    throw new Error(
-      "Amazon sign-in flow did not expose password input. Please retry."
-    );
+    // Amazon can present additional verification stages before password.
+    // Keep the session alive and prompt for the code path instead of failing.
+    return { needsTotp: true };
   }
 
   await page.locator(passwordSelector).first().fill(config.password);
@@ -536,7 +545,7 @@ async function signInWithPassword(
     throw new Error("Amazon sign-in failed. Verify username/password.");
   }
 
-  return { needsTotp: false };
+  return { needsTotp: true };
 }
 
 async function submitTotp(
