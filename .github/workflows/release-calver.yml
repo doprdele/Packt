@@ -48,7 +48,7 @@ jobs:
         id: bump
         run: |
           git fetch --tags origin
-          version="$(./scripts/release-calver.sh)"
+          version="$(./scripts/release-calver.sh | tail -n 1)"
           tag="v${version}"
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "tag=${tag}" >> "$GITHUB_OUTPUT"

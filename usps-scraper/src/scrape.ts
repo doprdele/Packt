@@ -37,6 +37,10 @@ interface BrowserSession {
   close: () => Promise<void>;
 }
 
+interface BrowserSessionOptions {
+  usePersistedState?: boolean;
+}
+
 function normalizeSpace(value: string | undefined | null): string | undefined {
   if (!value) return undefined;
   const normalized = value.replace(/\u00a0/g, " ").replace(/\s+/g, " ").trim();
@@ -64,15 +68,22 @@ function getExecutablePath(): string | undefined {
   return undefined;
 }
 
-async function createBrowserSession(timeoutMs: number): Promise<BrowserSession> {
+async function createBrowserSession(
+  timeoutMs: number,
+  options: BrowserSessionOptions = {}
+): Promise<BrowserSession> {
   const cdpEndpoint = process.env.USPS_CDP_WS_ENDPOINT?.trim();
+  const usePersistedState = options.usePersistedState !== false;
 
-  const contextOptions = await withCarrierSessionState("usps", {
+  const baseContextOptions = {
     locale: "en-US",
     timezoneId: process.env.USPS_TIMEZONE ?? "America/New_York",
     userAgent: process.env.USPS_USER_AGENT ?? DEFAULT_USER_AGENT,
     viewport: { width: 1366, height: 900 },
-  } satisfies BrowserContextOptions);
+  } satisfies BrowserContextOptions;
+  const contextOptions = usePersistedState
+    ? await withCarrierSessionState("usps", baseContextOptions)
+    : baseContextOptions;
 
   if (cdpEndpoint) {
     const browser = await chromium.connectOverCDP(cdpEndpoint, {
@@ -277,7 +288,10 @@ export async function scrapeUspsTracking(
   let lastError: Error | undefined;
 
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    const session = await createBrowserSession(timeoutMs);
+    const session = await createBrowserSession(timeoutMs, {
+      // If persisted state gets stale/corrupt, retries should use a fresh context.
+      usePersistedState: attempt === 1,
+    });
 
     try {
       const page = await session.context.newPage();

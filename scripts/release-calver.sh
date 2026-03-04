@@ -43,13 +43,13 @@ fi
 for package_dir in backend frontend; do
   (
     cd "$package_dir"
-    bun pm pkg set "version=${version}"
+    bun pm pkg set "version=${version}" >/dev/null
   )
 done
 
 (
   cd usps-scraper
-  npm version "$version" --no-git-tag-version
+  npm version "$version" --no-git-tag-version >/dev/null
 )
 
 printf '%s\n' "$version"
