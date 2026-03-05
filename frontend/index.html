@@ -111,10 +111,252 @@
           "Fira Code", "JetBrains Mono", monospace !important;
       }
 
+      .dashboard-shell {
+        width: min(100%, 1320px);
+        margin-inline: auto;
+      }
+
+      .package-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 236px;
+        border-radius: 0.85rem;
+        padding: 1.02rem;
+        cursor: pointer;
+        outline: none;
+        background: rgba(216, 194, 176, 0.55);
+        box-shadow: 0 8px 28px rgba(54, 30, 16, 0.12);
+        transition:
+          transform 170ms ease,
+          box-shadow 170ms ease,
+          background-color 170ms ease;
+      }
+
+      .package-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 14px 26px rgba(54, 30, 16, 0.2);
+      }
+
+      .package-card:focus-visible {
+        box-shadow:
+          0 0 0 3px rgba(59, 130, 246, 0.45),
+          0 16px 30px rgba(54, 30, 16, 0.22);
+      }
+
+      .dark .package-card {
+        background: rgba(55, 65, 81, 0.84);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34);
+      }
+
+      .package-card-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.88rem;
+        margin-bottom: 0.72rem;
+      }
+
+      .package-card-main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .package-card-title-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+      }
+
+      .package-card-title {
+        margin: 0;
+        font-size: 1.06rem;
+        font-weight: 700;
+        line-height: 1.28;
+        color: #2d1f19;
+        overflow-wrap: break-word;
+        word-break: normal;
+        hyphens: auto;
+      }
+
+      .dark .package-card-title {
+        color: #f3e8dc;
+      }
+
+      .package-card-time {
+        font-size: 0.78rem;
+        line-height: 1.15;
+        color: #5b6472;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .dark .package-card-time {
+        color: #9ca3af;
+      }
+
+      .package-card-slot {
+        flex: 1 1 480px;
+        min-width: min(100%, 360px);
+        max-width: 100%;
+      }
+
+      @media (min-width: 640px) {
+        .package-card-title-row {
+          flex-direction: row;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 0.55rem;
+        }
+      }
+
+      @media (max-width: 920px) {
+        .package-card-slot {
+          flex-basis: 100%;
+          min-width: 0;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .package-footer {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.35rem;
+        }
+      }
+
+      .package-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.44rem;
+        margin-top: 0.5rem;
+      }
+
+      .package-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(94, 66, 43, 0.18);
+        padding: 0.19rem 0.56rem;
+        font-size: 0.74rem;
+        line-height: 1.2;
+        color: #4f3c30;
+        background: rgba(255, 255, 255, 0.6);
+      }
+
+      .package-chip--status {
+        font-weight: 700;
+        color: #2f4f76;
+        border-color: rgba(47, 79, 118, 0.26);
+        background: rgba(219, 234, 254, 0.8);
+      }
+
+      .dark .package-chip {
+        color: #d6d8e0;
+        border-color: rgba(199, 206, 217, 0.24);
+        background: rgba(17, 24, 39, 0.28);
+      }
+
+      .dark .package-chip--status {
+        color: #bfdbfe;
+        border-color: rgba(147, 197, 253, 0.36);
+        background: rgba(30, 58, 138, 0.3);
+      }
+
+      .package-summary {
+        margin-top: 0.62rem;
+        margin-bottom: 0.42rem;
+        font-size: 0.9rem;
+        line-height: 1.42;
+        color: #4b5563;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+      }
+
+      .dark .package-summary {
+        color: #dbe3ef;
+      }
+
+      .package-facts {
+        display: grid;
+        gap: 0.33rem;
+      }
+
+      .package-fact {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.44rem;
+        font-size: 0.81rem;
+        line-height: 1.32;
+        color: #5f6773;
+      }
+
+      .dark .package-fact {
+        color: #9ca3af;
+      }
+
+      .package-fact i {
+        width: 0.85rem;
+        margin-top: 0.08rem;
+        color: inherit;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .package-fact-value {
+        min-width: 0;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+
+      .package-footer {
+        margin-top: auto;
+        padding-top: 0.7rem;
+        border-top: 1px solid rgba(94, 66, 43, 0.16);
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 0.72rem;
+      }
+
+      .package-footer-meta {
+        font-size: 0.76rem;
+        line-height: 1.2;
+        color: #49586a;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .package-footer-updated {
+        font-size: 0.72rem;
+        line-height: 1.2;
+        white-space: nowrap;
+        color: #6b7280;
+      }
+
+      .dark .package-footer {
+        border-top-color: rgba(148, 163, 184, 0.2);
+      }
+
+      .dark .package-footer-meta {
+        color: #cbd5e1;
+      }
+
+      .dark .package-footer-updated {
+        color: #9ca3af;
+      }
+
       .amazon-carrier-logo {
         position: relative;
         overflow: hidden;
         padding: 0 !important;
+        isolation: isolate;
       }
 
       .amazon-logo-tile {
@@ -128,27 +370,122 @@
 
       .amazon-product-grid {
         position: relative;
-        display: grid;
         width: 100%;
         height: 100%;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        grid-template-rows: repeat(2, minmax(0, 1fr));
-        gap: 4px;
-        padding: 5px;
       }
 
-      .amazon-product-grid img {
+      .amazon-product-tile {
+        position: absolute;
+        overflow: hidden;
+        border-radius: 0.45rem;
+        border: 1px solid rgba(116, 76, 36, 0.22);
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+      }
+
+      .amazon-product-tile[data-index="0"] {
+        left: 6%;
+        top: 8%;
+        width: 58%;
+        height: 58%;
+        z-index: 4;
+      }
+
+      .amazon-product-tile[data-index="1"] {
+        right: 6%;
+        top: 8%;
+        width: 44%;
+        height: 44%;
+        z-index: 3;
+      }
+
+      .amazon-product-tile[data-index="2"] {
+        left: 6%;
+        bottom: 8%;
+        width: 44%;
+        height: 44%;
+        z-index: 2;
+      }
+
+      .amazon-product-tile[data-index="3"] {
+        right: 10%;
+        bottom: 10%;
+        width: 38%;
+        height: 38%;
+        z-index: 1;
+      }
+
+      .amazon-product-tile img {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-radius: 6px;
-        border: 1px solid rgba(116, 76, 36, 0.25);
-        background: rgba(255, 255, 255, 0.85);
+        display: block;
       }
 
-      .dark .amazon-product-grid img {
-        border-color: rgba(212, 187, 167, 0.35);
-        background: rgba(31, 41, 55, 0.7);
+      .amazon-product-tile--placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(116, 76, 36, 0.48);
+      }
+
+      .amazon-product-tile--placeholder i {
+        font-size: 0.7rem;
+      }
+
+      .amazon-product-tile--failed {
+        background:
+          linear-gradient(
+            135deg,
+            rgba(243, 244, 246, 0.95),
+            rgba(229, 231, 235, 0.95)
+          );
+      }
+
+      .amazon-product-more {
+        position: absolute;
+        right: 2px;
+        bottom: 2px;
+        z-index: 5;
+        border-radius: 9999px;
+        border: 1px solid rgba(255, 255, 255, 0.88);
+        background: rgba(15, 23, 42, 0.86);
+        color: #fff;
+        font-size: 0.63rem;
+        line-height: 1;
+        padding: 0.16rem 0.32rem;
+      }
+
+      .amazon-carrier-badge {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        z-index: 6;
+        max-width: calc(100% - 8px);
+        border-radius: 9999px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        background: rgba(15, 23, 42, 0.72);
+        color: #e5e7eb;
+        font-size: 0.56rem;
+        font-weight: 700;
+        padding: 0.16rem 0.35rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .dark .amazon-product-tile {
+        border-color: rgba(212, 187, 167, 0.28);
+        background: rgba(31, 41, 55, 0.78);
+      }
+
+      .dark .amazon-product-tile--placeholder {
+        color: rgba(216, 194, 176, 0.58);
+      }
+
+      .dark .amazon-product-more {
+        border-color: rgba(17, 24, 39, 0.9);
+        background: rgba(30, 41, 59, 0.88);
       }
     </style>
   </head>
@@ -160,14 +497,14 @@
       <img src="logo.svg" alt="Paqq Logo" class="w-96 mr-2 drop-shadow-xl" />
     </div>
     <div
-      class="max-w-5xl mx-auto bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-4 sm:p-6"
+      class="dashboard-shell bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-4 sm:p-6"
     >
       <div
         id="packageContainer"
-        class="custom-scrollbar max-h-[80vh] overflow-y-auto pr-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        class="custom-scrollbar max-h-[80vh] overflow-y-auto pr-2 flex flex-wrap items-stretch content-start gap-4"
       >
         <div
-          class="relative h-full bg-coffee-light/50 dark:bg-gray-700/50 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-all duration-300 min-h-[200px]"
+          class="package-card-slot relative h-full bg-coffee-light/50 dark:bg-gray-700/50 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-all duration-300 min-h-[200px]"
           id="addPackageCard"
         >
           <div class="flex items-center justify-center h-full">
@@ -183,7 +520,7 @@
         </div>
       </div>
     </div>
-    <div class="max-w-5xl mx-auto mt-8 p-4">
+    <div class="dashboard-shell mt-8 p-4">
       <div
         class="bg-white/80 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-lg p-6"
       >
@@ -902,6 +1239,47 @@
         return result;
       }
 
+      function collectImageLikeFields(value, depth = 0, output = [], visited = new WeakSet()) {
+        if (output.length >= 40 || depth > 4 || value == null) {
+          return output;
+        }
+        if (typeof value === "string") {
+          output.push(value);
+          return output;
+        }
+        if (Array.isArray(value)) {
+          for (const entry of value) {
+            collectImageLikeFields(entry, depth + 1, output, visited);
+            if (output.length >= 40) {
+              break;
+            }
+          }
+          return output;
+        }
+        if (typeof value !== "object") {
+          return output;
+        }
+        if (visited.has(value)) {
+          return output;
+        }
+        visited.add(value);
+        for (const [key, entry] of Object.entries(value)) {
+          if (output.length >= 40) {
+            break;
+          }
+          if (typeof entry === "string") {
+            if (/(image|img|thumbnail|photo|picture)/i.test(key)) {
+              output.push(entry);
+            }
+            continue;
+          }
+          if (entry && (typeof entry === "object" || Array.isArray(entry))) {
+            collectImageLikeFields(entry, depth + 1, output, visited);
+          }
+        }
+        return output;
+      }
+
       function collectAmazonProductImagesFromShipment(shipment) {
         const invoiceJson =
           shipment?.invoice &&
@@ -913,12 +1291,17 @@
         const invoiceImages = Array.isArray(invoiceJson.itemImageUrls)
           ? invoiceJson.itemImageUrls
           : [];
+        const nestedInvoiceImages = collectImageLikeFields(invoiceJson);
         const directImages = Array.isArray(shipment?.productImages)
           ? shipment.productImages
           : Array.isArray(shipment?.itemImageUrls)
           ? shipment.itemImageUrls
           : [];
-        return normalizeAmazonProductImages([...directImages, ...invoiceImages]);
+        return normalizeAmazonProductImages([
+          ...directImages,
+          ...invoiceImages,
+          ...nestedInvoiceImages,
+        ]);
       }
 
       function normalizeAmazonEvents(events, fallbackDescription, fallbackTimestamp) {
@@ -1020,7 +1403,7 @@
       function normalizeStoredAmazonPackages() {
         let changed = false;
         packages = packages.map((pkg) => {
-          if (!pkg || pkg.carrier !== "amazon") {
+          if (!pkg || !isImportedFromAmazon(pkg)) {
             return pkg;
           }
 
@@ -1201,7 +1584,7 @@
         }
         normalizeStoredAmazonPackages();
         packages
-          .filter((pkg) => pkg?.carrier === "amazon")
+          .filter((pkg) => isImportedFromAmazon(pkg))
           .forEach((pkg) =>
             void cacheAmazonProductImages(
               pkg.amazonProductImages || collectAmazonProductImagesFromShipment(pkg)
@@ -1276,6 +1659,10 @@
             trackingUrl:
               target.lastResult?.trackingUrl ||
               `https://www.${target.source}.com`,
+            estimatedDelivery:
+              typeof target.lastResult?.estimatedDelivery === "string"
+                ? target.lastResult.estimatedDelivery
+                : "",
             events: Array.isArray(target.lastResult?.events)
               ? target.lastResult.events
               : [],
@@ -1577,6 +1964,122 @@
         4: "bg-orange-500", // Out for Delivery
         5: "bg-green-500", // Delivered
       };
+      const statusLabels = {
+        1: "Registered",
+        2: "Processing",
+        3: "In transit",
+        4: "Out for delivery",
+        5: "Delivered",
+      };
+
+      function getStatusLabel(statusCode) {
+        const normalizedCode = Number.parseInt(String(statusCode || "0"), 10);
+        return statusLabels[normalizedCode] || "Tracking update";
+      }
+
+      function formatRelativeTime(dateValue) {
+        const parsed = new Date(dateValue || Date.now());
+        if (Number.isNaN(parsed.getTime())) {
+          return "recently";
+        }
+        const diff = Date.now() - parsed.getTime();
+        const minutes = Math.floor(diff / 60_000);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
+        if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+        if (minutes > 0) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+        return "just now";
+      }
+
+      function formatCompactDateTime(dateValue) {
+        const parsed = new Date(dateValue || Date.now());
+        if (Number.isNaN(parsed.getTime())) {
+          return "Unknown";
+        }
+        return parsed.toLocaleString(undefined, {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        });
+      }
+
+      function readPackageEstimatedDelivery(packageData) {
+        const value =
+          packageData?.estimatedDelivery ??
+          packageData?.status?.estimatedDelivery ??
+          packageData?.invoice?.json?.estimatedDelivery;
+        if (typeof value !== "string") {
+          return "";
+        }
+        return value.replace(/\s+/g, " ").trim();
+      }
+
+      function isImportedFromAmazon(packageData) {
+        if (!packageData || typeof packageData !== "object") {
+          return false;
+        }
+        const source = packageData?.invoice?.json?.source;
+        return Boolean(
+          packageData.amazonOrderId ||
+            packageData.amazonShipmentId ||
+            (typeof source === "string" && source.toLowerCase() === "amazon")
+        );
+      }
+
+      function getAmazonItemCount(packageData, imageUrls = []) {
+        const items = packageData?.invoice?.json?.items;
+        if (Array.isArray(items) && items.length > 0) {
+          return items.length;
+        }
+        return Array.isArray(imageUrls) ? imageUrls.length : 0;
+      }
+
+      function buildAmazonImportMetadata(packageData) {
+        if (!isImportedFromAmazon(packageData)) {
+          return "";
+        }
+        const parts = ["Imported from Amazon"];
+        if (typeof packageData.amazonOrderId === "string" && packageData.amazonOrderId) {
+          parts.push(`Order ${packageData.amazonOrderId}`);
+        }
+        if (
+          typeof packageData.amazonShipmentId === "string" &&
+          packageData.amazonShipmentId
+        ) {
+          parts.push(`Shipment ${packageData.amazonShipmentId}`);
+        }
+        return parts.join(" · ");
+      }
+
+      function isImportMetadataText(value) {
+        return /^imported from amazon/i.test(normalizeAmazonText(value));
+      }
+
+      function getPackageSummaryText(packageData, normalizedEvents) {
+        const description = normalizeAmazonText(packageData?.description);
+        const latestEventDescription = normalizeAmazonText(
+          normalizedEvents?.[0]?.description
+        );
+        const importedFromAmazon = isImportedFromAmazon(packageData);
+
+        if (description && !(importedFromAmazon && isImportMetadataText(description))) {
+          return description;
+        }
+        if (
+          latestEventDescription &&
+          !(importedFromAmazon && isImportMetadataText(latestEventDescription))
+        ) {
+          return latestEventDescription;
+        }
+        if (importedFromAmazon) {
+          return "Shipment imported from your account. Open card for full timeline and invoice.";
+        }
+        return description || "Tracking scheduled in background.";
+      }
+
       function formatDate(dateString) {
         const date = new Date(dateString);
         return date.toLocaleString();
@@ -1650,8 +2153,10 @@
         const sanitizedName = sanitizeHTML(package.friendlyName);
         const isTrackingPending = package.isTrackingPending === true;
         const trackingFetchFailed = package.trackingFetchFailed === true;
-        const isAmazonPackage = package.carrier === "amazon";
-        const normalizedEvents = isAmazonPackage
+        const importedFromAmazon = isImportedFromAmazon(package);
+        const shouldUseAmazonVisuals =
+          importedFromAmazon || package.carrier === "amazon";
+        const normalizedEvents = shouldUseAmazonVisuals
           ? normalizeAmazonEvents(
               package.events,
               package.description,
@@ -1660,7 +2165,7 @@
           : Array.isArray(package.events)
           ? package.events
           : [];
-        const amazonProductImages = isAmazonPackage
+        const amazonProductImages = shouldUseAmazonVisuals
           ? normalizeAmazonProductImages(
               package.amazonProductImages || collectAmazonProductImagesFromShipment(package)
             )
@@ -1670,46 +2175,82 @@
         }
         const descriptionText = isTrackingPending
           ? "Brewing the latest tracking update..."
-          : isAmazonPackage
-          ? cleanAmazonDescription(package.description, normalizedEvents)
-          : package.description || "Tracking scheduled in background.";
+          : getPackageSummaryText(package, normalizedEvents);
         const sanitizedDescription = sanitizeHTML(descriptionText);
-        const sanitizedCarrier = sanitizeHTML(package.carrier);
+        const carrierValue = typeof package.carrier === "string" ? package.carrier : "carrier";
+        const carrierUpper = carrierValue.toUpperCase();
+        const sanitizedCarrierUpper = sanitizeHTML(carrierUpper);
         const sanitizedLogo = sanitizeUrl(carrierLogos[package.carrier] || "");
         const lastLocation =
           package.status?.location ||
-          normalizedEvents?.[normalizedEvents.length - 1]?.location ||
-          normalizedEvents?.[0]?.location;
+          normalizedEvents?.[0]?.location ||
+          normalizedEvents?.[normalizedEvents.length - 1]?.location;
         const sanitizedLocation = lastLocation
           ? sanitizeHTML(lastLocation)
           : null;
-        const logoMarkup = isAmazonPackage
+        const sanitizedTrackingNumber = sanitizeHTML(package.trackingNumber || "N/A");
+        const statusLabel = sanitizeHTML(getStatusLabel(package.status));
+        const timeAgo = sanitizeHTML(formatRelativeTime(package.lastUpdate));
+        const absoluteUpdate = sanitizeHTML(formatCompactDateTime(package.lastUpdate));
+        const estimatedDelivery = readPackageEstimatedDelivery(package);
+        const sanitizedEstimatedDelivery = estimatedDelivery
+          ? sanitizeHTML(estimatedDelivery)
+          : "";
+        const amazonItemsCount = getAmazonItemCount(package, amazonProductImages);
+        const hasInvoiceJson =
+          package.invoice &&
+          typeof package.invoice === "object" &&
+          package.invoice.json &&
+          typeof package.invoice.json === "object";
+        const hasInvoicePdf =
+          package.invoice &&
+          typeof package.invoice === "object" &&
+          typeof package.invoice.pdfBase64 === "string" &&
+          package.invoice.pdfBase64.length > 0;
+        const hasInvoice = hasInvoiceJson || hasInvoicePdf;
+        const importMetadata = buildAmazonImportMetadata(package);
+        const footerMetadata = importMetadata || `Source: ${carrierUpper}`;
+        const sanitizedFooterMetadata = sanitizeHTML(footerMetadata);
+        const logoMarkup = shouldUseAmazonVisuals
           ? (() => {
               const logoTile = sanitizeUrl(carrierLogos.amazon || AMAZON_LOGO_ASSET);
-              const productTiles = amazonProductImages
-                .slice(0, 4)
-                .map((url, index) => {
-                  const sanitizedImageUrl = sanitizeUrl(url);
+              const productTiles = [0, 1, 2, 3]
+                .map((index) => {
+                  const sanitizedImageUrl = sanitizeUrl(amazonProductImages[index] || "");
                   if (!sanitizedImageUrl) {
-                    return "";
+                    return `<div class="amazon-product-tile amazon-product-tile--placeholder" data-index="${index}" aria-hidden="true">
+                              <i class="fas fa-box"></i>
+                            </div>`;
                   }
-                  return `<img src="${sanitizedImageUrl}"
-                               alt="${sanitizedCarrier} item ${index + 1}"
-                               loading="lazy"
-                               referrerpolicy="no-referrer"
-                               onerror="this.style.display='none'">`;
+                  return `<div class="amazon-product-tile" data-index="${index}">
+                              <img src="${sanitizedImageUrl}"
+                                   alt="${sanitizedName} item photo ${index + 1}"
+                                   loading="lazy"
+                                   decoding="async"
+                                   onerror="this.parentElement.classList.add('amazon-product-tile--failed'); this.remove();">
+                            </div>`;
                 })
                 .join("");
+              const remainingItemCount = Math.max(0, amazonProductImages.length - 4);
+              const moreBadge =
+                remainingItemCount > 0
+                  ? `<span class="amazon-product-more" aria-label="${remainingItemCount} more items">+${remainingItemCount}</span>`
+                  : "";
+              const carrierBadge =
+                carrierValue.toLowerCase() !== "amazon"
+                  ? `<span class="amazon-carrier-badge">${sanitizedCarrierUpper}</span>`
+                  : "";
               return `
                 <div class="carrier-logo amazon-carrier-logo bg-white rounded-lg w-16 h-16 sm:w-20 sm:h-20 dark:bg-gray-800">
+                    ${carrierBadge}
                     <div class="amazon-logo-tile" style="background-image:url('${logoTile}')"></div>
-                    <div class="amazon-product-grid">${productTiles}</div>
+                    <div class="amazon-product-grid">${productTiles}${moreBadge}</div>
                 </div>
               `;
             })()
           : `
                 <img src="${sanitizedLogo}"
-                     alt="${sanitizedCarrier}"
+                     alt="${sanitizedCarrierUpper} logo"
                      class="carrier-logo bg-white rounded-lg p-1 w-16 h-16 sm:w-20 sm:h-20 dark:bg-gray-800"
                      onerror="this.src='default-logo.png'">
             `;
@@ -1723,28 +2264,17 @@
                   <span>Fetching details...</span>
               </div>
             `
-          : trackingFetchFailed
-          ? `
+          : "";
+
+        const trackingFetchFailedHtml =
+          !isTrackingPending && trackingFetchFailed
+            ? `
               <div class="mt-2 text-xs text-amber-700 dark:text-amber-300">
                   <i class="fas fa-clock-rotate-left mr-1"></i>
                   Tracking is queued and will retry in the background.
               </div>
             `
-          : "";
-
-        const timeAgo = (() => {
-          const diff =
-            new Date().getTime() - new Date(package.lastUpdate).getTime();
-          const minutes = Math.floor(diff / 60000);
-          const hours = Math.floor(minutes / 60);
-          const days = Math.floor(hours / 24);
-
-          if (days > 0) return `${days} day${days > 1 ? "s" : ""} ago`;
-          if (hours > 0) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-          if (minutes > 0)
-            return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-          return "just now";
-        })();
+            : "";
 
         const statusBarHtml = (() => {
           const statusCode = parseFloat(package.status || 0);
@@ -1765,37 +2295,92 @@
           return "";
         })();
 
+        const metadataChips = `
+          <span class="package-chip package-chip--status">
+              <i class="fas fa-circle-check" aria-hidden="true"></i>${statusLabel}
+          </span>
+          <span class="package-chip">
+              <i class="fas fa-truck-fast" aria-hidden="true"></i>${sanitizedCarrierUpper}
+          </span>
+          ${
+            importedFromAmazon && amazonItemsCount > 0
+              ? `<span class="package-chip"><i class="fas fa-box-open" aria-hidden="true"></i>${amazonItemsCount} item${
+                  amazonItemsCount > 1 ? "s" : ""
+                }</span>`
+              : ""
+          }
+          ${hasInvoice ? `<span class="package-chip"><i class="fas fa-file-invoice" aria-hidden="true"></i>Invoice</span>` : ""}
+          ${
+            isTrackingPending
+              ? '<span class="package-chip"><i class="fas fa-arrows-rotate" aria-hidden="true"></i>Refreshing</span>'
+              : ""
+          }
+        `;
+
+        const cardAriaLabel = sanitizeHTML(
+          `Open details for ${package.friendlyName || package.trackingNumber || "package"}`
+        );
+
         return `
-    <div class="relative bg-coffee-light/70 dark:bg-gray-700/70 rounded-lg shadow-md min-h-[200px] cursor-pointer hover:shadow-lg transition-all duration-300 animate-scale-in" 
-         data-package-id="${parseInt(package.id)}">
-        <div class="flex flex-col h-full p-4">
-            <div class="flex items-start gap-4 mb-4">
+    <div class="package-card-slot package-card animate-scale-in" 
+         role="button"
+         tabindex="0"
+         aria-label="${cardAriaLabel}"
+         data-package-id="${parseInt(package.id, 10)}">
+        <div class="package-card-header">
                 ${logoMarkup}
-                <div class="flex-1 min-w-0">
-                    <div class="space-y-1">
-                        <h3 class="font-montserrat font-semibold text-lg break-words dark:text-coffee-light">
+                <div class="package-card-main">
+                    <div class="package-card-title-row">
+                        <h3 class="package-card-title">
                             ${sanitizedName}
                         </h3>
-                        <span class="block text-xs text-gray-500 dark:text-gray-400">
-                            <i class="fas fa-clock mr-1"></i>${timeAgo}
+                        <span class="package-card-time" title="${absoluteUpdate}">
+                            <i class="fas fa-clock mr-1" aria-hidden="true"></i>${timeAgo}
                         </span>
                     </div>
-                    <p class="text-sm sm:text-base text-gray-600 dark:text-gray-300 mt-2 line-clamp-2">
+                    <div class="package-chip-row">
+                        ${metadataChips}
+                    </div>
+                    <p class="package-summary">
                         ${sanitizedDescription}
                     </p>
+                    <div class="package-facts">
+                        <p class="package-fact">
+                            <i class="fas fa-barcode" aria-hidden="true"></i>
+                            <span class="package-fact-value">${sanitizedTrackingNumber}</span>
+                        </p>
+                        ${
+                          sanitizedLocation
+                            ? `
+                                <p class="package-fact">
+                                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                    <span class="package-fact-value">${sanitizedLocation}</span>
+                                </p>
+                            `
+                            : ""
+                        }
+                        ${
+                          sanitizedEstimatedDelivery
+                            ? `
+                                <p class="package-fact">
+                                    <i class="fas fa-calendar-check" aria-hidden="true"></i>
+                                    <span class="package-fact-value">ETA: ${sanitizedEstimatedDelivery}</span>
+                                </p>
+                            `
+                            : ""
+                        }
+                    </div>
                     ${pendingStatusHtml}
-                    ${
-                      sanitizedLocation
-                        ? `
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2 break-words">
-                                <i class="fas fa-location-dot mr-1 align-top"></i>
-                                ${sanitizedLocation}
-                            </p>
-                        `
-                        : ""
-                    }
+                    ${trackingFetchFailedHtml}
                 </div>
-            </div>
+        </div>
+        <div class="package-footer">
+            <span class="package-footer-meta" title="${sanitizedFooterMetadata}">
+                ${sanitizedFooterMetadata}
+            </span>
+            <span class="package-footer-updated" title="Last update: ${absoluteUpdate}">
+                ${absoluteUpdate}
+            </span>
         </div>
         ${statusBarHtml}
     </div>`;
@@ -1806,7 +2391,7 @@
         const packageCards = packages.map(createPackageCard).join("");
 
         const addCardHtml = `
-        <div class="relative h-full bg-coffee-light/50 dark:bg-gray-700/50 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-all duration-300 min-h-[200px]" id="addPackageCard">
+        <div class="package-card-slot relative h-full bg-coffee-light/50 dark:bg-gray-700/50 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition-all duration-300 min-h-[200px]" id="addPackageCard">
             <div class="flex items-center justify-center h-full">
                 <div class="text-center">
                     <i class="fas fa-plus-circle text-4xl text-coffee dark:text-coffee-light mb-2"></i>
@@ -2110,6 +2695,10 @@
           trackingUrl:
             shipment?.trackingUrl ||
             "https://www.amazon.com/gp/your-account/order-history",
+          estimatedDelivery:
+            typeof shipment?.estimatedDelivery === "string"
+              ? shipment.estimatedDelivery
+              : "",
           events,
           requiredFields: {},
           isTrackingPending: false,
@@ -2128,7 +2717,7 @@
 
         for (const shipment of shipments) {
           const importedPackage = buildAmazonPackageFromShipment(shipment);
-          if (importedPackage.carrier === "amazon") {
+          if (Array.isArray(importedPackage.amazonProductImages)) {
             void cacheAmazonProductImages(importedPackage.amazonProductImages);
           }
           const existingIndex = packages.findIndex(
@@ -2783,6 +3372,10 @@
           trackingNumber:
             trackingInfo.trackingNumber || currentPackage.trackingNumber,
           trackingUrl: trackingInfo.trackingUrl || currentPackage.trackingUrl,
+          estimatedDelivery:
+            typeof trackingInfo.estimatedDelivery === "string"
+              ? trackingInfo.estimatedDelivery
+              : currentPackage.estimatedDelivery || "",
           events: Array.isArray(trackingInfo.events) ? trackingInfo.events : [],
           isTrackingPending: false,
           trackingFetchFailed: false,
@@ -2887,6 +3480,7 @@
           lastUpdate: new Date().toISOString(),
           trackingNumber,
           trackingUrl: currentPackage?.trackingUrl || "",
+          estimatedDelivery: currentPackage?.estimatedDelivery || "",
           events: [],
           requiredFields: storedFields,
           isTrackingPending: true,
@@ -2930,22 +3524,36 @@
         return progressMap[status] || 0;
       }
 
-      document
-        .getElementById("packageContainer")
-        .addEventListener("click", (e) => {
-          const packageCard = e.target.closest("[data-package-id]");
-          const addPackageCard = e.target.closest("#addPackageCard");
+      const packageContainerElement = document.getElementById("packageContainer");
+      packageContainerElement.addEventListener("click", (e) => {
+        const packageCard = e.target.closest("[data-package-id]");
+        const addPackageCard = e.target.closest("#addPackageCard");
 
-          if (addPackageCard) {
-            showModal(modal);
-          } else if (packageCard) {
-            const packageId = parseInt(packageCard.dataset.packageId);
-            const package = packages.find((p) => p.id === packageId);
-            if (package) {
-              showPackageDetails(package);
-            }
+        if (addPackageCard) {
+          showModal(modal);
+        } else if (packageCard) {
+          const packageId = parseInt(packageCard.dataset.packageId, 10);
+          const package = packages.find((p) => p.id === packageId);
+          if (package) {
+            showPackageDetails(package);
           }
-        });
+        }
+      });
+      packageContainerElement.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") {
+          return;
+        }
+        const packageCard = e.target.closest("[data-package-id]");
+        if (!packageCard) {
+          return;
+        }
+        e.preventDefault();
+        const packageId = parseInt(packageCard.dataset.packageId, 10);
+        const package = packages.find((pkg) => pkg.id === packageId);
+        if (package) {
+          showPackageDetails(package);
+        }
+      });
 
       closeDetailsBtn.addEventListener("click", () =>
         hideModal(packageDetailsModal)
@@ -3299,6 +3907,7 @@
               lastUpdate: new Date().toISOString(),
               trackingNumber,
               trackingUrl: "",
+              estimatedDelivery: "",
               events: [],
               requiredFields: storedFields,
               isTrackingPending: true,
